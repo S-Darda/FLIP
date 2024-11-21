@@ -1,0 +1,160 @@
+/* src/Auth/SignIn.css */
+
+:root {
+    --primary-color: #007aff;
+    --secondary-color: #5f6368;
+    --background-color: #f9fafb;
+    --input-bg: #f0f2f5;
+    --button-color: #007aff;
+}
+
+* {
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background: var(--background-color);
+}
+
+.signin-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #eceff1, #f9fafb);
+}
+
+.signin-card {
+    width: 400px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h2 {
+    color: var(--primary-color);
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.signin-subtitle {
+    font-size: 0.95rem;
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+}
+
+.input-container {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.input-container input {
+    width: 100%;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 8px;
+    background: var(--input-bg);
+    font-size: 1rem;
+    color: #333;
+}
+
+.icon {
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--primary-color);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+    cursor: pointer;
+}
+
+.signin-button {
+    width: 100%;
+    background: var(--button-color);
+    color: #fff;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.signin-button:hover {
+    background: #005bb5;
+}
+
+.additional-options {
+    margin: 1.5rem 0;
+}
+
+.or {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+
+.social-login {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.social-btn {
+    width: 45%;
+    padding: 0.6rem 0;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 600;
+    color: #fff;
+    transition: background 0.3s;
+}
+
+.google {
+    background: #db4437;
+}
+
+.google:hover {
+    background: #c4382b;
+}
+
+.facebook {
+    background: #3b5998;
+}
+
+.facebook:hover {
+    background: #334c87;
+}
+
+.extra-links {
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+    margin-top: 1.5rem;
+}
+
+.extra-links p,
+.forgot-password-link {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.extra-links a:hover {
+    text-decoration: underline;
+}
