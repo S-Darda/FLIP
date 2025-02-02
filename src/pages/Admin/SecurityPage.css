@@ -1,0 +1,194 @@
+/* General Container */
+.security-page-container {
+    padding: 40px;
+    width: 1300px;
+    margin-left: 120px;
+    background: linear-gradient(135deg, #f8fbff, #eef6fc);
+    font-family: "Poppins", sans-serif;
+    border-radius: 15px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header */
+  .security-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .security-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .security-header p {
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
+  /* Security Sections */
+  .security-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+  }
+  
+  /* Security Card */
+  .security-card {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+  }
+  
+  .security-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    border-left: 5px solid #007bff;
+  }
+  
+  .security-card h2 {
+    font-size: 1.5rem;
+    color: #007bff;
+    margin-bottom: 20px;
+  }
+  
+  /* Gradients for Specific Sections */
+  .password-card {
+    background: linear-gradient(135deg, #f0f9ff, #e3f2fd);
+  }
+  
+  .access-card {
+    background: linear-gradient(135deg, #e9f8ee, #dff4e4);
+  }
+  
+  .activity-card {
+    background: linear-gradient(135deg, #fff5e8, #ffe8cc);
+  }
+  
+  .tips-card {
+    background: linear-gradient(135deg, #ffe9e9, #ffd6d6);
+  }
+  
+  /* Icons */
+  .security-icon {
+    font-size: 2.5rem;
+    color: #007bff;
+    margin-bottom: 10px;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  /* Password Management */
+  .password-management {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .password-input {
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+    width: 70%;
+    transition: all 0.3s ease;
+  }
+  
+  .password-input:focus {
+    border-color: #007bff;
+    outline: none;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+  }
+  
+  .toggle-password {
+    padding: 10px;
+    background: linear-gradient(135deg, #ffc107, #e0a800);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+  
+  .toggle-password:hover {
+    background: linear-gradient(135deg, #e0a800, #d39e00);
+    transform: translateY(-2px);
+  }
+  
+  /* Buttons */
+  .save-button,
+  .manage-button,
+  .view-button {
+    padding: 12px 18px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  .save-button:hover,
+  .manage-button:hover,
+  .view-button:hover {
+    background: linear-gradient(135deg, #0056b3, #004080);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Security Tips */
+  .security-tips {
+    text-align: left;
+    font-size: 1rem;
+    color: #444;
+  }
+  
+  .security-tips li {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .security-tips li:before {
+    content: "✔";
+    font-size: 1.2rem;
+    color: #28a745;
+  }
+  

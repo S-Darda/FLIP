@@ -25,7 +25,7 @@
   
   /* Form Section (Left) */
   .form-section {
-    flex: 2;
+    flex: 1.5;
     padding: 1.5rem;
     background-color: #fdfdfd;
     border-radius: 10px;
@@ -184,33 +184,43 @@
   }
   
   /* Hover Effect */
-  .info-section ul li:hover {
+  .info-section ul li {
     background: #f4f0ff;
     transform: translateY(-2px);
     transition: all 0.3s ease;
   }
   
   /* Icon Styling */
-  .info-section ul li .icon-container {
-    flex-shrink: 0;
-    margin-right: 1rem;
-    background: #8e44ad; /* Primary color for icons */
-    color: #fff;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
-  }
+ /* Icon Styling */
+.info-section ul li .icon-container {
+  flex-shrink: 0; /* Prevent shrinking */
+  margin-right: 1.2rem; /* Adjust spacing */
+  background: linear-gradient(135deg, #6a0dad, #8e44ad); /* Gradient for icons */
+  color: #ffffff; /* White text color for icons */
+  border-radius: 50%; /* Circular shape */
+  width: 50px; /* Increased width for larger icons */
+  height: 50px; /* Match height with width */
+  display: flex; /* Flexbox for centering */
+  align-items: center; /* Vertically center */
+  justify-content: center; /* Horizontally center */
+  font-size: 1.5rem; /* Adjust font size for icons */
+  font-weight: bold; /* Ensure bold appearance */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Deeper shadow for better depth */
+  /* transition: transform 0.3s ease; Smooth hover animation */
+}
+
+/* Add a subtle hover effect for icons */
+.info-section ul li .icon-container:hover {
+  
+}
+
   
   /* Text Content */
   .info-section ul li .text {
     color: #555;
     font-size: 1rem;
-    line-height: 1.5;
+    line-height: 2;
+    margin-left: 50px;
   }
   
   

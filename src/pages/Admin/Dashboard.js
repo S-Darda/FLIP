@@ -1,102 +1,110 @@
-import React, { useState } from 'react';
-import './Dashboard.css'; // Import your CSS file here
-import 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css'; // Include Font Awesome if needed
+import React from 'react';
+import { Line, Bar } from 'react-chartjs-2';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Tooltip,
+    Legend
+} from 'chart.js';
+import './Dashboard.css';
+
+import Sidebar from './Sidebar';
+import HeaderNavbar from './HeaderNavbar';
+import Footer from './Footer';
+
+// Register Chart.js components
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Tooltip,
+    Legend
+);
 
 const Dashboard = () => {
-    const [activeDropdown, setActiveDropdown] = useState(null);
+    // Data for Line Chart
+    const lineChartData = {
+        labels: ['Quarter 1', 'Quarter 2', 'Quarter 3', 'Quarter 4'],
+        datasets: [
+            {
+                label: 'Production Volume',
+                data: [15, 25, 20, 30],
+                borderColor: '#FF6384',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+            },
+            {
+                label: 'Order Volume',
+                data: [10, 18, 28, 22],
+                borderColor: '#36A2EB',
+                backgroundColor: 'transparent',
+                borderWidth: 2,
+            },
+        ],
+    };
 
-    const toggleDropdown = (index) => {
-        setActiveDropdown(activeDropdown === index ? null : index);
+    // Data for Bar Chart
+    const barChartData = {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [
+            {
+                label: 'Waste Produced',
+                data: [12, 19, 7, 15, 20, 10],
+                backgroundColor: '#FFCE56',
+            },
+        ],
     };
 
     return (
-        <div className="container">
+        <div className="dashboard-container">
             {/* Sidebar */}
-            <aside className="sidebar">
-                <div className="logo">
-                    <img src="https://via.placeholder.com/30" alt="logo" /> FLIP
-                </div>
-                <ul className="nav">
-                    <li onClick={() => toggleDropdown(0)}>
-                        <i className="fas fa-tachometer-alt"></i> <span>Dashboard</span>
-                    </li>
-                    <li onClick={() => toggleDropdown(1)}>
-                        <i className="fas fa-project-diagram"></i> <span>Manage Project</span>
-                        <ul className={`dropdown ${activeDropdown === 1 ? 'active' : ''}`}>
-                            <li className="dropdown-item"><i className="fas fa-plus"></i> Create Project</li>
-                            <li className="dropdown-item"><i className="fas fa-eye"></i> View Projects</li>
-                        </ul>
-                    </li>
-                    <li onClick={() => toggleDropdown(2)}>
-                        <i className="fas fa-users"></i> <span>User and Role</span>
-                        <ul className={`dropdown ${activeDropdown === 2 ? 'active' : ''}`}>
-                            <li className="dropdown-item"><i className="fas fa-user-plus"></i> Add User</li>
-                            <li className="dropdown-item"><i className="fas fa-user-cog"></i> Manage Roles</li>
-                        </ul>
-                    </li>
-                    <li onClick={() => toggleDropdown(3)}>
-                        <i className="fas fa-chart-line"></i> <span>Monitoring and Logging</span>
-                        <ul className={`dropdown ${activeDropdown === 3 ? 'active' : ''}`}>
-                            <li className="dropdown-item"><i className="fas fa-server"></i> Server Logs</li>
-                            <li className="dropdown-item"><i className="fas fa-file-alt"></i> Application Logs</li>
-                        </ul>
-                    </li>
-                    <li onClick={() => toggleDropdown(4)}>
-                        <i className="fas fa-cogs"></i> <span>Federated Training Control</span>
-                        <ul className={`dropdown ${activeDropdown === 4 ? 'active' : ''}`}>
-                            <li className="dropdown-item"><i className="fas fa-sliders-h"></i> Training Settings</li>
-                            <li className="dropdown-item"><i className="fas fa-chart-pie"></i> Performance Metrics</li>
-                        </ul>
-                    </li>
-                    <li><i className="fas fa-shield-alt"></i> <span>Security</span></li>
-                    <li><i className="fas fa-sync"></i> <span>Real-Time Updates</span></li>
-                </ul>
-            </aside>
+            <Sidebar />
 
             {/* Main Content */}
-            <main className="dashboard">
-                {/* Replace the contents inside this main section as needed */}
-                <header>
-                    <div className="breadcrumb">
-                        <span><i className="fas fa-home"></i> Home</span>
-                        <i className="fas fa-angle-right"></i>
-                        <span> Overview</span>
-                    </div>
-                    <div className="header-icons">
-                        <input type="text" placeholder="Search..." />
-                        <div className="icon"><i className="fas fa-bell"></i></div>
-                        <div className="icon"><i className="fas fa-cog"></i></div>
-                        <div className="user-profile">
-                            <i className="fas fa-user-circle"></i>
-                            <span>Admin</span>
-                        </div>
-                    </div>
-                </header>
+            <div className="dashboard-main">
+                <HeaderNavbar />
 
-                <section className="stats">
+                <div className="dashboard-header">
+                    <h1>Performance FLIP Dashboard</h1>
+                </div>
+
+                {/* KPI Cards */}
+                <div className="cards-container">
                     <div className="card">
-                        <h3>Sales from 1-12 Dec.</h3>
-                        <canvas id="salesChart"></canvas>
+                        <h3>Production Volume</h3>
+                        <p>10,431</p>
                     </div>
                     <div className="card">
-                        <h3>Activity Time Distribution</h3>
-                        <canvas id="activityChart"></canvas>
+                        <h3>Order Volume</h3>
+                        <p>7,061</p>
                     </div>
                     <div className="card">
-                        <h3>User Engagement</h3>
-                        <canvas id="engagementChart"></canvas>
+                        <h3>Sales Revenue</h3>
+                        <p>$29m</p>
                     </div>
-                    <div className="card">
-                        <h3>Website Traffic</h3>
-                        <canvas id="trafficChart"></canvas>
+                </div>
+
+                {/* Charts */}
+                <div className="charts-container">
+                    <div className="chart">
+                        <h3>Quarterly Overview</h3>
+                        <Line data={lineChartData} />
                     </div>
-                </section>
+                    <div className="chart">
+                        <h3>Waste Produced</h3>
+                        <Bar data={barChartData} />
+                    </div>
+                </div>
 
                 {/* Footer */}
-                <footer>
-                    &copy; 2024 Developer Dashboard
-                </footer>
-            </main>
+                <Footer />
+            </div>
         </div>
     );
 };

@@ -1,0 +1,121 @@
+/* General Container */
+.realtime-updates-container {
+    padding: 40px;
+    width: 1300px;
+    background: linear-gradient(135deg, #f8f9fc, #ffffff);
+    font-family: "Poppins", sans-serif;
+    border-radius: 15px;
+    margin-left: 120px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header */
+  .realtime-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+  }
+  
+  .realtime-header h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .fetch-button {
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .fetch-button:hover {
+    background: linear-gradient(135deg, #0056b3, #004080);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Updates List */
+  .updates-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+  }
+  
+  /* Update Item */
+  .update-item {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-left: 5px solid;
+  }
+  
+  .update-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Update Content */
+  .update-content {
+    margin-left: 15px;
+  }
+  
+  .update-message {
+    font-size: 1rem;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .update-timestamp {
+    font-size: 0.85rem;
+    color: #888;
+  }
+  
+  /* Update Icon */
+  .update-icon {
+    font-size: 2rem;
+    color: #007bff;
+    animation: bounce 1.5s infinite ease-in-out;
+  }
+  
+  /* Animations */
+  @keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-10px);
+    }
+    60% {
+      transform: translateY(-5px);
+    }
+  }
+  
+  /* Status Colors */
+  .update-item.info {
+    border-left-color: #007bff;
+  }
+  
+  .update-item.success {
+    border-left-color: #28a745;
+  }
+  
+  .update-item.error {
+    border-left-color: #dc3545;
+  }
+  

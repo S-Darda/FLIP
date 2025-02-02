@@ -1,0 +1,82 @@
+/* Footer Styling */
+.footer {
+    background-color: #2c3e50;
+    color: #fff;
+    padding: 20px 20px; /* Increased padding for more spacious footer */
+    text-align: center;
+    position: relative;
+    bottom: 0;
+    width: calc(100% - 0px); /* Adjust the width to accommodate the margin */
+    box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.1); /* Soft shadow for separation */
+}
+
+/* Footer content */
+.footer-content {
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+/* Footer title (optional for branding) */
+.footer h3 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+/* Footer links */
+.footer-links {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center; /* Center the links */
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+.footer-links a {
+    color: #fff;
+    margin: 0 15px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: color 0.3s ease;
+}
+
+/* Footer links hover effect */
+.footer-links a:hover {
+    color: #3498db; /* Change to a blue color on hover */
+}
+
+/* Footer social icons (if needed) */
+.footer-social-icons {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.footer-social-icons a {
+    font-size: 18px;
+    color: #fff;
+    transition: color 0.3s ease;
+}
+
+.footer-social-icons a:hover {
+    color: #3498db;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .footer {
+        padding: 20px;
+    }
+
+    .footer-links a {
+        margin: 0 10px;
+        font-size: 14px;
+    }
+
+    /* Footer social icons for mobile */
+    .footer-social-icons {
+        flex-direction: column;
+        gap: 10px;
+    }
+}

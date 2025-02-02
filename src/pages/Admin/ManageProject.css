@@ -1,0 +1,308 @@
+/* General Container */
+.manage-project-container {
+  display: flex;
+  flex-direction: column;
+  background: #f8f9fc; /* Light background */
+  padding: 20px;
+  margin-left: 150px;
+  font-family: "Poppins", sans-serif;
+  width: 1200px; /* Full width */
+  min-height: 100vh; /* Full height of the viewport */
+  box-sizing: border-box; /* Ensure padding doesn't affect width */
+}
+
+/* Tabs Section */
+.tabs-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  background: #ffffff; /* White background */
+  padding: 10px 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Tab Button */
+.tab-button {
+  flex: 1; /* Equal width for all tabs */
+  padding: 10px 15px;
+  font-size: 1rem;
+  font-weight: bold;
+  background: #e9ecef; /* Light gray background */
+  color: #333;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  margin: 0 5px; /* Add spacing between tabs */
+}
+
+.tab-button:hover {
+  background: #d6d8db; /* Darker gray on hover */
+}
+
+.tab-button.active {
+  background: #007bff; /* Blue background for active tab */
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 123, 255, 0.2);
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin-top: 20px;
+  flex-wrap: wrap; /* Adjust layout for smaller screens */
+}
+
+/* Left Section: Project Details */
+.project-details {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px; /* Minimum width for responsiveness */
+}
+
+.project-details h2 {
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.project-details label {
+  font-weight: bold;
+  margin-top: 15px;
+  display: block;
+  color: #555;
+}
+
+.view-box {
+  padding: 10px;
+  margin-top: 5px;
+  background: #f8f9fc;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  color: #555;
+}
+
+.view-query-button {
+  padding: 8px 12px; /* Slightly smaller padding for a compact button */
+  margin-top: 8px; /* Reduced margin to minimize the gap */
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+
+.view-query-button:hover {
+  background: #0056b3;
+}
+
+/* Right Section: Project Status */
+.project-status {
+  flex: 1;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  min-width: 300px; /* Minimum width for responsiveness */
+}
+
+.project-status h2 {
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.project-list {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.project-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  margin-bottom: 10px;
+  background: #f8f9fc;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.project-name {
+  font-weight: bold;
+  color: #555;
+}
+
+.status-button {
+  padding: 8px 12px;
+  border: none;
+  
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+}
+
+.status-button.green {
+  background: #28a745;
+  color: white;
+}
+
+.status-button.green:hover {
+  background: #218838;
+}
+
+.status-button.red {
+  background: #dc3545;
+  color: white;
+}
+
+.status-button.red:hover {
+  background: #c82333;
+}
+
+.view-button {
+  background: #007bff;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.view-button:hover {
+  background: #0056b3;
+}
+
+.view-more-button {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  display: block;
+  margin: 20px auto 0;
+  text-align: center;
+}
+
+.view-more-button:hover {
+  background: #0056b3;
+}
+
+/* Popup Modal */
+.popup-overlay {
+  position: fixed; /* Fixed to the viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000; /* Ensure it appears above all other elements */
+}
+
+.popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Add shadow for depth */
+  width: 500px;
+  max-width: 90%; /* Responsive width */
+  text-align: center;
+  animation: popup-in 0.3s ease-in-out; /* Smooth animation */
+}
+
+.close-button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #dc3545; /* Red for the close button */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.close-button:hover {
+  background: #a71d2a;
+}
+
+/* Popup Table Styling */
+.dummy-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+}
+
+.dummy-table th,
+.dummy-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.dummy-table th {
+  background: #007bff;
+  color: white;
+  font-weight: bold;
+}
+
+.dummy-table td {
+  background: #f8f9fc;
+}
+
+.action-button {
+  padding: 5px 10px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.3s ease;
+}
+
+.action-button:hover {
+  background: #0056b3;
+}
+
+/* Viewed Project Details */
+.viewed-project-details {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: #f8f9fc;
+  border-radius: 5px;
+}
+
+/* Popup Animation */
+@keyframes popup-in {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

@@ -131,7 +131,7 @@ html, body {
 }
 /* Header */
 .header {
-    background: linear-gradient(90deg, #4f7294, #419d8a); /* Gradient background */
+    
     color: var(--white-color);
     height: 100px;
     padding: 1rem 2rem;
@@ -145,7 +145,7 @@ html, body {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(90deg, #4f7294, #419d8a); /* Gradient background */
+    
     color: white;
     text-align: center;
     padding: 5rem 10rem;
