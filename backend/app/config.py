@@ -25,6 +25,16 @@ TRAINING_ROUND_DELAY = float(os.getenv("FLIP_ROUND_DELAY", "0.35"))
 
 SEED_DEMO_DATA = os.getenv("FLIP_SEED", "1") == "1"
 
+# Admins must enrol TOTP before using admin APIs when this is on (recommended outside demos).
+REQUIRE_ADMIN_MFA = os.getenv("FLIP_REQUIRE_ADMIN_MFA", "0") == "1"
+
+# How long the coordinator waits for a site agent to answer a task before treating it as a dropout.
+AGENT_TASK_TIMEOUT = float(os.getenv("FLIP_AGENT_TIMEOUT", "60"))
+ENROLMENT_TOKEN_HOURS = int(os.getenv("FLIP_ENROLMENT_TOKEN_HOURS", "24"))
+
+# Per-site metrics computed on fewer rows than this are suppressed in reports.
+MIN_REPORT_ROWS = int(os.getenv("FLIP_MIN_REPORT_ROWS", "20"))
+
 # Optional: ship audit logs to Elasticsearch (view them in Kibana).
 ELASTICSEARCH_URL = os.getenv("FLIP_ELASTICSEARCH_URL", "")
 ELASTICSEARCH_INDEX = os.getenv("FLIP_ELASTICSEARCH_INDEX", "flip-logs")
