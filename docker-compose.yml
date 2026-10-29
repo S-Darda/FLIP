@@ -1,0 +1,54 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: flip
+      MYSQL_USER: flip
+      MYSQL_PASSWORD: flip
+      MYSQL_ROOT_PASSWORD: flip-root
+    volumes: [db-data:/var/lib/mysql]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uflip", "-pflip"]
+      interval: 5s
+      retries: 20
+
+  api:
+    build: ./backend
+    environment:
+      FLIP_DATABASE_URL: mysql+pymysql://flip:flip@db:3306/flip
+      FLIP_SECRET_KEY: ${FLIP_SECRET_KEY:-change-me-in-production}
+      FLIP_STORAGE_DIR: /data/storage
+      FLIP_CORS_ORIGINS: http://localhost:3000
+      FLIP_ELASTICSEARCH_URL: ${FLIP_ELASTICSEARCH_URL:-}
+    volumes: [api-data:/data]
+    depends_on:
+      db: { condition: service_healthy }
+    ports: ["8000:8000"]
+
+  web:
+    build: ./frontend
+    depends_on: [api]
+    ports: ["3000:80"]
+
+  # Optional log analytics: docker compose --profile monitoring up
+  # and set FLIP_ELASTICSEARCH_URL=http://elasticsearch:9200 for the api.
+  elasticsearch:
+    profiles: [monitoring]
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    ports: ["9200:9200"]
+
+  kibana:
+    profiles: [monitoring]
+    image: docker.elastic.co/kibana/kibana:8.15.3
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on: [elasticsearch]
+    ports: ["5601:5601"]
+
+volumes:
+  db-data:
+  api-data:
