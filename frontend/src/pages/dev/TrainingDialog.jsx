@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { api } from '../../api'
 import Icon from '../../components/Icon'
 import { Field, Modal } from '../../components/ui'
+import { DEFAULT_DELTA, gaussianEpsilon } from '../../privacy'
 
 const PRESETS = {
   quick: { label: 'Quick check', rounds: 10, local_epochs: 1 },
@@ -14,11 +15,12 @@ export default function TrainingDialog({ project, onClose, onStarted }) {
   const [cfg, setCfg] = useState({
     model_type: project.model_type, algorithm: 'FedAvg', rounds: 25, num_nodes: project.cohort_size,
     client_fraction: 1, local_epochs: 2, batch_size: 32, learning_rate: project.model_type === 'mlp' ? 0.05 : 0.1,
-    mu: 0.01, dp_enabled: false, clip_norm: 1, noise_multiplier: 0.5,
+    mu: 0.01, dp_enabled: false, clip_norm: 1, noise_multiplier: 1.0,
     dataset_id: trainable[0]?.dataset_id ?? '',
   })
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const eps = cfg.dp_enabled ? gaussianEpsilon(cfg.noise_multiplier, cfg.rounds) : null
   const set = (k, numeric) => e => {
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value
     setCfg(c => ({ ...c, [k]: numeric && v !== '' ? Number(v) : v }))
@@ -83,12 +85,20 @@ export default function TrainingDialog({ project, onClose, onStarted }) {
         </div>
         <fieldset className="dp-box">
           <legend><label className="check"><input type="checkbox" checked={cfg.dp_enabled} onChange={set('dp_enabled')} /> <Icon name="shield" size={14} /> Differential privacy</label></legend>
-          <p className="muted small">Clips each node's update and adds Gaussian noise to the aggregate, so no single record can be inferred from the model. Costs some accuracy.</p>
+          <p className="muted small">Client-level DP: each site's whole update is clipped and Gaussian noise is added to the aggregate, bounding how much any one site can change the released model. Smaller ε is stronger protection and usually costs accuracy.</p>
           {cfg.dp_enabled && (
-            <div className="form-grid">
-              <Field label="Clip norm" htmlFor="t-clip"><input id="t-clip" className="input" type="number" min="0.01" max="100" step="any" value={cfg.clip_norm} onChange={set('clip_norm', true)} /></Field>
-              <Field label="Noise multiplier" htmlFor="t-noise"><input id="t-noise" className="input" type="number" min="0" max="10" step="any" value={cfg.noise_multiplier} onChange={set('noise_multiplier', true)} /></Field>
-            </div>
+            <>
+              <div className="form-grid">
+                <Field label="Clip norm" htmlFor="t-clip"><input id="t-clip" className="input" type="number" min="0.01" max="100" step="any" value={cfg.clip_norm} onChange={set('clip_norm', true)} /></Field>
+                <Field label="Noise multiplier" htmlFor="t-noise"><input id="t-noise" className="input" type="number" min="0" max="10" step="any" value={cfg.noise_multiplier} onChange={set('noise_multiplier', true)} /></Field>
+              </div>
+              <p className="dp-preview">
+                {eps == null
+                  ? <>Noise multiplier 0 gives <strong>no</strong> privacy guarantee.</>
+                  : <>Budget for {cfg.rounds} rounds: <strong>ε = {eps.toFixed(2)}</strong>, δ = {DEFAULT_DELTA.toExponential(0)} <span className="muted">(RDP accountant, no subsampling amplification)</span>
+                    {eps > 10 && <><br /><span className="upload-warn"><Icon name="warning" size={12} /> ε above 10 is a weak guarantee. Raise the noise multiplier or use fewer rounds.</span></>}</>}
+              </p>
+            </>
           )}
         </fieldset>
       </form>

@@ -177,7 +177,14 @@ export default function TrainingRun({ admin }) {
                 <dt>Model parameters</dt><dd>{num(report.parameters)}</dd>
                 <dt>Features</dt><dd>{report.features}</dd>
                 <dt>Training time</dt><dd>{report.training_seconds} s</dd>
-                {report.privacy_epsilon != null && <><dt>Privacy budget</dt><dd>ε ≈ {report.privacy_epsilon.toFixed(1)} <span className="muted small">(δ = 10⁻⁵, indicative)</span></dd></>}
+                <dt>Differential privacy</dt>
+                <dd>{report.privacy?.guarantee
+                  ? <>ε = {report.privacy.epsilon.toFixed(2)}, δ = {Number(report.privacy.delta).toExponential(0)} <span className="muted small">client-level · {report.privacy.accountant}</span></>
+                  : report.privacy
+                    ? <span className="muted">None: no formal privacy guarantee for this model</span>
+                    : report.privacy_epsilon != null
+                      ? <>ε ≈ {report.privacy_epsilon.toFixed(1)} <span className="muted small">(legacy rough estimate; retrain for an accounted value)</span></>
+                      : <span className="muted">None: no formal privacy guarantee for this model</span>}</dd>
               </dl>
               <table className="table">
                 <thead><tr><th>Class</th><th>Precision</th><th>Recall</th><th>F1</th><th>Support</th></tr></thead>

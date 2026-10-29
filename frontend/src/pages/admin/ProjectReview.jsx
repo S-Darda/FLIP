@@ -87,7 +87,7 @@ export default function ProjectReview() {
             </dl>
           </section>
           <section className="card">
-            <h2 className="card-title">Datasets <small>metadata only; raw rows stay with the developer's nodes</small></h2>
+            <h2 className="card-title">Datasets <small>prototype: files are stored on this server and split across simulated sites</small></h2>
             {p.datasets.length === 0 ? <p className="muted">No dataset uploaded. Training will use a synthetic federated cohort.</p> : (
               <table className="table">
                 <thead><tr><th>File</th><th>Size</th><th>Rows</th><th>Columns</th><th>Trainable</th></tr></thead>

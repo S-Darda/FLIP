@@ -13,7 +13,7 @@ const BENEFITS = [
   ['check', 'Detailed model performance reports: accuracy, precision, recall, F1 and a confusion matrix.'],
   ['rocket', 'Trained models you can download, or submit for deployment approval.'],
   ['live', 'Live progress for every round and every participating node.'],
-  ['lock', 'Raw records stay with each node; only model updates are shared.'],
+  ['lock', 'Federated training: each simulated site trains locally and only its update is aggregated, with optional client-level DP.'],
   ['logs', 'An audit trail of every action on the project.'],
 ]
 

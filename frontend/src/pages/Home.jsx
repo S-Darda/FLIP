@@ -10,9 +10,9 @@ import { Aurora, CountUp } from '../components/ui'
 import { pct } from '../format'
 
 const FEATURES = [
-  { icon: 'shield', title: 'Data never leaves home', text: 'Raw records stay inside each hospital, bank or lab. Only model updates travel, supporting GDPR and HIPAA obligations.' },
+  { icon: 'shield', title: 'Local training by design', text: 'In federated mode each site trains on its own records and sends model updates, not rows. Updates and models can still leak information, so they get their own protections.' },
   { icon: 'nodes', title: 'FedAvg and FedProx', text: 'Sample-weighted averaging or a proximal term for uneven, non-IID data across institutions.' },
-  { icon: 'lock', title: 'Differential privacy', text: 'Clip each node’s update and add calibrated noise, with an estimated privacy budget in every report.' },
+  { icon: 'lock', title: 'Differential privacy', text: 'Clip each site’s update and add calibrated noise. A Rényi-DP accountant reports the client-level (ε, δ) actually spent.' },
   { icon: 'live', title: 'Live round-by-round', text: 'Watch the federation train: updates fly in, the global model improves, every node reports back.' },
   { icon: 'trophy', title: 'Compare and rank', text: 'A leaderboard of every run, and side-by-side curves to see exactly which settings win.' },
   { icon: 'logs', title: 'Governed and audited', text: 'Admin approval for projects and models, role-based access, and a searchable audit trail.' },
@@ -21,8 +21,8 @@ const FEATURES = [
 const STEPS = ['Create a project', 'Get it approved', 'Start federated training', 'Watch it live', 'Ship the model']
 
 const SECTORS = [
-  { icon: 'shield', title: 'Healthcare', text: 'Hospitals build readmission and early-warning models without moving patient records between trusts.' },
-  { icon: 'key', title: 'Finance', text: 'Banks detect fraud patterns across institutions without disclosing customer transactions.' },
+  { icon: 'shield', title: 'Healthcare', text: 'Hospitals collaborate on readmission and early-warning models without pooling patient records in one central dataset.' },
+  { icon: 'key', title: 'Finance', text: 'Banks learn shared fraud signals while customer transactions stay in each bank’s own systems.' },
   { icon: 'globe', title: 'Research', text: 'Labs and universities accelerate shared model development while datasets stay under local control.' },
 ]
 
@@ -81,8 +81,9 @@ export default function Home() {
       <section className="hero">
         <div>
           <span className="hero-eyebrow"><b>New</b> Live federation view, run leaderboard and dark mode</span>
-          <h1>Train together.<br /><span className="grad-text">Share nothing.</span></h1>
-          <p className="lead">FLIP is a Federated Learning Infrastructure Platform: institutions build one shared model while every raw record stays exactly where it is.</p>
+          <h1>Train together.<br /><span className="grad-text">Keep data local.</span></h1>
+          <p className="lead">FLIP is a Federated Learning Infrastructure Platform: sites train locally and only model updates are aggregated into one shared model, with privacy controls and governance around every step.</p>
+          <p className="prototype-note"><Icon name="info" size={14} /> Research prototype: sites are simulated on the FLIP server and uploaded files are stored there. Not for real personal or sensitive data.</p>
           <div className="hero-actions">
             <Link className="btn btn-primary btn-lg" to={start}>Get started <Icon name="chevron" size={16} /></Link>
             <a className="btn btn-lg" href="#how">See how it works</a>

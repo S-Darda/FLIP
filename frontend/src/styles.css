@@ -637,6 +637,7 @@ tr.best td { background: color-mix(in srgb, var(--green) 7%, transparent); }
 .chip-btn.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent); }
 .dp-box { border: 1px solid var(--border); border-radius: 14px; padding: .7rem 1rem .3rem; margin: .4rem 0 0; background: var(--surface-2); }
 .dp-box legend { padding: 0 .35rem; }
+.dp-preview { margin: 0 0 .7rem; padding: .55rem .75rem; border-radius: 10px; background: color-mix(in srgb, var(--accent) 9%, transparent); font-size: .86rem; }
 
 .palette-backdrop { place-items: start center; padding-top: 12vh; }
 .palette { width: min(620px, 100%); background: var(--surface-solid); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-lg), 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent); overflow: hidden; animation: scale-in .25s var(--ease) both; }
@@ -739,6 +740,9 @@ tr.best td { background: color-mix(in srgb, var(--green) 7%, transparent); }
 .hero h1 { font-size: clamp(2.3rem, 5.4vw, 4rem); line-height: 1.04; letter-spacing: -.035em; margin: 1.1rem 0 1rem; animation: fade-up .7s .08s var(--ease) both; }
 .hero h1 .grad-text { background-size: 200% 100%; animation: gradient-pan 6s linear infinite; }
 .hero p.lead { font-size: 1.15rem; color: var(--muted); max-width: 560px; animation: fade-up .7s .16s var(--ease) both; }
+.prototype-note { display: inline-flex; gap: .45rem; align-items: flex-start; margin-top: .9rem; padding: .5rem .8rem; border-radius: 11px; font-size: .84rem; color: var(--amber); background: color-mix(in srgb, var(--amber) 10%, var(--surface)); border: 1px solid color-mix(in srgb, var(--amber) 28%, transparent); max-width: 560px; animation: fade-up .7s .2s var(--ease) both; }
+.prototype-note .icon { margin-top: 2px; }
+.upload-warn { display: flex; gap: .35rem; align-items: center; color: var(--amber); font-size: .78rem; }
 .hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; margin-top: 1.6rem; animation: fade-up .7s .24s var(--ease) both; }
 .hero-viz { position: relative; padding: 1rem; border-radius: 26px; background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow-lg); backdrop-filter: blur(18px); animation: scale-in .9s .2s var(--ease) both; }
 .hero-viz::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; background: var(--grad); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: .7; pointer-events: none; }

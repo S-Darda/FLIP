@@ -3,8 +3,12 @@
 Each participating node (hospital, bank, lab...) holds its own data partition. Per round the
 coordinator sends the global weights to the selected nodes, each node trains locally and
 returns only a weight update, and the coordinator aggregates the updates (FedAvg, or FedProx
-with a proximal term). Raw rows never leave a node. Optional differential privacy clips each
-node's update and adds Gaussian noise to the aggregate.
+with a proximal term). Optional differential privacy clips each node's update and adds
+Gaussian noise to the aggregate (accounting in privacy.py).
+
+In this prototype every node is simulated inside the server process, so the coordinator can
+see each individual update and the source data. It demonstrates the protocol; it is not a
+deployment in which raw rows stay at participating sites.
 
 Models are written directly in numpy so the platform has no GPU or framework dependency:
 softmax (multinomial logistic) regression and a one-hidden-layer MLP.
@@ -18,6 +22,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
+
+from .privacy import summary as dp_summary
 
 NODE_PREFIX = {"Healthcare": "Hospital", "Finance": "Bank", "Research": "Lab",
                "Retail": "Store", "Public Sector": "Agency"}
@@ -247,6 +253,7 @@ class FederatedSession:
     params: list[np.ndarray] = field(init=False)
     rng: np.random.Generator = field(init=False)
     started: float = field(init=False)
+    rounds_run: int = field(init=False, default=0)
 
     def __post_init__(self):
         self.rng = np.random.default_rng(self.cfg.seed)
@@ -290,6 +297,7 @@ class FederatedSession:
 
     def run_round(self, rnd: int) -> dict:
         t0 = time.perf_counter()
+        self.rounds_run += 1
         cfg = self.cfg
         m = max(1, round(cfg.client_fraction * len(self.nodes)))
         chosen = set(self.rng.choice(len(self.nodes), size=m, replace=False).tolist())
@@ -342,10 +350,7 @@ class FederatedSession:
             mag = np.linalg.norm(self.params[0], axis=1)
             order = np.argsort(-mag)[:12]
             importance = [{"feature": self.features[i], "weight": float(mag[i])} for i in order]
-        epsilon = None
-        if self.cfg.dp_enabled and self.cfg.noise_multiplier > 0:
-            # Rough Gaussian-mechanism budget for the whole run (delta = 1e-5); indicative only.
-            epsilon = float(math.sqrt(2 * self.cfg.rounds * math.log(1 / 1e-5)) / self.cfg.noise_multiplier)
+        privacy = dp_summary(self.cfg.dp_enabled, self.cfg.noise_multiplier, self.cfg.clip_norm, self.rounds_run)
         return {
             "accuracy": acc, "loss": loss,
             "precision": float(np.mean([c["precision"] for c in per_class])),
@@ -357,7 +362,8 @@ class FederatedSession:
             "test_samples": int(sum(len(n.y_test) for n in self.nodes)),
             "features": len(self.features), "feature_importance": importance,
             "training_seconds": round(time.perf_counter() - self.started, 2),
-            "privacy_epsilon": epsilon,
+            "privacy_epsilon": privacy["epsilon"],
+            "privacy": privacy,
             "parameters": int(sum(p.size for p in self.params)),
         }
 

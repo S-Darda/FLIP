@@ -18,6 +18,7 @@ export function FilePicker({ files, setFiles, id = 'files' }) {
         <Icon name="upload" size={22} />
         <span><strong>Choose files</strong> or drag them here</span>
         <small className="muted">CSV for training (last column = label). JSON, ZIP or Parquet are stored for reference. Max 50 MB each.</small>
+        <small className="upload-warn"><Icon name="warning" size={12} /> Prototype: files are stored on the FLIP server. Do not upload real personal or sensitive data.</small>
         <input id={id} type="file" multiple accept=".csv,.txt,.json,.zip,.parquet" className="sr-only"
                onChange={e => { add(e.target.files); e.target.value = '' }} />
       </label>

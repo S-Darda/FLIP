@@ -36,3 +36,19 @@ def test_dp_clips_updates():
     step = np.sqrt(sum(np.sum((a - b) ** 2) for a, b in zip(s.params, before)))
     # The average of updates each clipped to 0.05 can't move further than 0.05.
     assert step <= 0.05 + 1e-9
+
+
+def test_dp_accountant_behaves():
+    from app.privacy import gaussian_epsilon, summary
+    assert gaussian_epsilon(0, 10) is None
+    e10, e40 = gaussian_epsilon(1.0, 10), gaussian_epsilon(1.0, 40)
+    assert 0 < e10 < e40  # budget grows with rounds
+    assert gaussian_epsilon(2.0, 40) < e40  # more noise, less spent
+    # Cross-check against the zCDP closed form: rho = T / (2 z^2), eps <= rho + 2 sqrt(rho ln(1/delta)).
+    import math
+    rho = 100 / (2 * 1.1 ** 2)
+    e = gaussian_epsilon(1.1, 100)
+    assert rho < e <= rho + 2 * math.sqrt(rho * math.log(1e5))
+    assert summary(False, 0.5, 1.0, 10)["guarantee"] is False
+    s = summary(True, 1.0, 1.0, 10)
+    assert s["guarantee"] and s["unit"] == "client" and s["epsilon"] == e10

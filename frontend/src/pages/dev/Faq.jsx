@@ -5,7 +5,7 @@ const FAQS = [
   ['How do I apply for project approval?', 'Fill in the Apply for Approval form and press Apply for Approval. An admin reviews it and you are notified the moment they decide.'],
   ['Can I edit my project details later?', 'Yes. Description and objectives can be edited at any time. Changing the name, domain, cohort size or model of an approved project sends it back for review.'],
   ['What happens if my project is rejected?', "You'll see the admin's feedback on the project page. Update the project and save it to resubmit automatically."],
-  ['Does my raw data leave my organisation?', 'In a FLIP deployment raw data stays on each node. Here, an uploaded CSV is split across simulated nodes to demonstrate exactly that flow; only weight updates are aggregated.'],
+  ['Does my raw data leave my organisation?', 'In this prototype, yes: an uploaded CSV is stored on the FLIP server and split across simulated sites. The target design runs a local agent at each site so raw rows are never uploaded. Until then, do not upload real personal or sensitive data.'],
   ['Which dataset format works for training?', 'A CSV with a header row. Numeric columns become features and the last column is the label (for example yes/no or a class name).'],
 ]
 

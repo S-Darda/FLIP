@@ -1,6 +1,6 @@
 # FLIP: Federated Learning Infrastructure Platform
 
-A web platform where organisations train machine learning models together without sharing raw data. It implements the system described in *Federated Learning Infrastructure Platform (FLIP) with FastAPI and React* (S. D. Rahman, MSc thesis).
+A research prototype of a platform where organisations train machine learning models together through federated learning. It implements the system described in *Federated Learning Infrastructure Platform (FLIP) with FastAPI and React* (S. D. Rahman, MSc thesis).
 
 | Part | Who it's for | What it does |
 |---|---|---|
@@ -19,7 +19,7 @@ Training is real, not a mock-up. `backend/app/federated.py` runs federated learn
 1. The project's data is split across *N* nodes (Hospital A, Hospital B, ...). An uploaded CSV is split with a label-skewed (non-IID) partition; without a CSV, each node gets its own synthetic data with a different class mix and feature shift.
 2. Each round, the coordinator sends the global weights to the selected nodes. Every node trains locally with mini-batch SGD and returns only a weight update.
 3. Updates are aggregated with **FedAvg** (sample-weighted) or **FedProx** (adds a proximal term for non-IID nodes).
-4. Optional **differential privacy** clips each node's update and adds Gaussian noise to the aggregate. The report shows an indicative ε.
+4. Optional **differential privacy** clips each node's update and adds Gaussian noise to the aggregate. A Rényi-DP accountant (`backend/app/privacy.py`) reports the client-level (ε, δ) actually spent, with no subsampling amplification claimed.
 5. Each node evaluates the global model on its own held-out split. Round metrics stream to the browser over WebSocket.
 6. The final report includes accuracy, macro precision, recall and F1, a confusion matrix, per-class and per-node results, and feature importance for linear models. Results and weights can be downloaded as JSON.
 
@@ -90,7 +90,7 @@ cd flip/backend
 .venv/Scripts/python -m pytest -q
 ```
 
-16 tests cover sign-in and lockout, RBAC, session revocation, the project approve/reject/resubmit lifecycle, upload validation, training on an uploaded CSV, FedProx + DP + partial participation, model submissions, log scoping and export, the WebSocket handshake, the public stats endpoint, and the FL engine itself.
+17 tests cover sign-in and lockout, RBAC, session revocation, the project approve/reject/resubmit lifecycle, upload validation, training on an uploaded CSV, FedProx + DP + partial participation, model submissions, log scoping and export, the WebSocket handshake, the public stats endpoint, the DP accountant, and the FL engine itself.
 
 ## Configuration
 
@@ -122,6 +122,9 @@ All settings are environment variables (see `backend/app/config.py`):
 | Final models deployed or refined (§6.3) | Model submissions reviewed on Model Approvals |
 
 ## Limits of this build
+
+See [docs/security-architecture-gap-analysis.md](docs/security-architecture-gap-analysis.md) for a full comparison with the security architecture and the phased plan to close the gaps.
+
 
 - Nodes are simulated inside one server process; there is no remote client agent yet. The aggregation, privacy and reporting code is written so a real node agent could send the same weight updates.
 - Training jobs run in the API process, so run a single worker (as the Dockerfile does). A job that is running when the server stops is marked failed on restart.
