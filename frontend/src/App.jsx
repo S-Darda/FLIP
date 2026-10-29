@@ -1,6 +1,7 @@
 import { Link, Route, Routes } from 'react-router-dom'
 import AppShell from './components/AppShell'
 import { AdminRoute, DeveloperRoute } from './components/RouteGuards'
+import { Aurora } from './components/ui'
 import Account from './pages/Account'
 import AdminDashboard from './pages/admin/Dashboard'
 import ManageProjects from './pages/admin/ManageProjects'
@@ -16,6 +17,7 @@ import DevModels from './pages/dev/Models'
 import Projects from './pages/dev/Projects'
 import ProjectView from './pages/dev/ProjectView'
 import Home from './pages/Home'
+import CompareRuns from './pages/shared/CompareRuns'
 import LiveUpdates from './pages/shared/LiveUpdates'
 import Logs from './pages/shared/Logs'
 import TrainingList from './pages/shared/TrainingList'
@@ -24,6 +26,7 @@ import TrainingRun from './pages/shared/TrainingRun'
 function NotFound() {
   return (
     <div className="center-page">
+      <Aurora />
       <div className="card narrow">
         <h1>Page not found</h1>
         <p className="muted">That address doesn't exist on FLIP.</p>
@@ -49,6 +52,7 @@ export default function App() {
         <Route path="logs" element={<Logs admin />} />
         <Route path="training" element={<TrainingList admin />} />
         <Route path="training/:id" element={<TrainingRun admin />} />
+        <Route path="compare" element={<CompareRuns admin />} />
         <Route path="models" element={<ModelApprovals />} />
         <Route path="security" element={<Security />} />
         <Route path="live" element={<LiveUpdates admin />} />
@@ -62,6 +66,7 @@ export default function App() {
         <Route path="projects/:id" element={<ProjectView />} />
         <Route path="training" element={<TrainingList />} />
         <Route path="training/:id" element={<TrainingRun />} />
+        <Route path="compare" element={<CompareRuns />} />
         <Route path="models" element={<DevModels />} />
         <Route path="logs" element={<Logs />} />
         <Route path="live" element={<LiveUpdates />} />

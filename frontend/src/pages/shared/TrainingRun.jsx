@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api, download } from '../../api'
 import { ConfusionMatrix, HBars, LineChart, SERIES_COLORS } from '../../components/Charts'
 import Icon from '../../components/Icon'
+import NetworkViz from '../../components/NetworkViz'
 import { Badge, ErrorBox, Field, Modal, PageHeader, Progress, Spinner, Stat, useApi } from '../../components/ui'
 import { dateTime, duration, num, pct } from '../../format'
 import { useRealtimeEvent } from '../../realtime'
@@ -81,6 +82,7 @@ export default function TrainingRun({ admin }) {
         actions={<>
           <Badge status={run.status} />
           {active && <button className="btn btn-danger btn-sm" onClick={cancel}><Icon name="stop" size={14} /> Stop</button>}
+          {run.status === 'Completed' && <Link className="btn btn-sm" to={`${base}/compare?ids=${run.training_id}`}><Icon name="trophy" size={14} /> Compare</Link>}
           {run.status === 'Completed' && <button className="btn btn-sm" onClick={dl}><Icon name="download" size={14} /> Download results</button>}
           {run.status === 'Completed' && !admin && <button className="btn btn-primary btn-sm" onClick={() => setSubmitting(true)}><Icon name="upload" size={14} /> Submit model</button>}
         </>}
@@ -94,7 +96,7 @@ export default function TrainingRun({ admin }) {
             <strong>Round {run.current_round} of {run.rounds}</strong>
             <span className="muted"> · {active ? 'running' : run.status.toLowerCase()} · {duration(run.started_at, run.finished_at)}</span>
           </div>
-          <Progress value={run.current_round} max={run.rounds} tone={run.status === 'Failed' ? 'red' : run.status === 'Completed' ? 'green' : undefined} />
+          <Progress value={run.current_round} max={run.rounds} live={active} tone={run.status === 'Failed' ? 'red' : run.status === 'Completed' ? 'green' : undefined} />
         </div>
         <div className="chips">
           <span className="chip">{run.num_nodes} nodes</span>
@@ -116,6 +118,16 @@ export default function TrainingRun({ admin }) {
           <Stat icon="nodes" tone="c3" label="Samples" value={num(report.train_samples + report.test_samples)} hint={`${num(report.test_samples)} held out across nodes`} />
         </> : <Stat icon="nodes" tone="c3" label="Nodes reporting" value={last ? `${last.nodes.filter(n => n.selected).length}/${last.nodes.length}` : '—'} hint="in the last round" />}
       </div>
+
+      {last && (
+        <section className={`card ${active ? 'card-glow' : ''}`}>
+          <h2 className="card-title">Federation topology
+            <small>{active ? 'live: each round, nodes send updates in and receive the new global model' : `final state after round ${last.round}`}</small></h2>
+          <div style={{ maxWidth: 680, margin: '0 auto' }}>
+            <NetworkViz nodes={last.nodes} round={last.round} accuracy={last.accuracy} active={active} />
+          </div>
+        </section>
+      )}
 
       <div className="grid-2">
         <section className="card">

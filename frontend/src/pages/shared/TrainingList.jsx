@@ -46,7 +46,7 @@ export default function TrainingList({ admin }) {
                 <td><Link to={`${base}/training/${j.training_id}`}><strong>#{j.training_id}</strong></Link></td>
                 <td>{j.project_name}{admin && <div className="muted small">{j.started_by_name}</div>}</td>
                 <td className="small">{j.algorithm} · {j.model_label}<div className="muted">{j.num_nodes} nodes · {j.rounds} rounds{j.dp_enabled ? ' · DP' : ''}</div></td>
-                <td className="w-progress"><Badge status={j.status} /><Progress value={j.current_round} max={j.rounds} /></td>
+                <td className="w-progress"><Badge status={j.status} /><Progress value={j.current_round} max={j.rounds} live={j.status === 'In Progress'} /></td>
                 <td>{pct(j.accuracy)}</td>
                 <td className="nowrap">{dateTime(j.started_at || j.created_at)}</td>
                 <td className="nowrap">{duration(j.started_at, j.finished_at)}</td>

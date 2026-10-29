@@ -27,6 +27,23 @@ def _daily(db: Session, column, days: int, *filters) -> list[dict]:
     return out
 
 
+@router.get("/public/stats")
+def public_stats(db: Session = Depends(get_db)):
+    """Aggregate figures for the public home page. Counts only, nothing identifying."""
+    done = db.query(ModelTraining).filter(ModelTraining.status == JOB_COMPLETED)
+    return {
+        "projects": db.query(Project).filter(Project.status == "Approved").count(),
+        "organisations": db.query(func.count(func.distinct(User.organisation)))
+                           .filter(User.organisation.isnot(None)).scalar() or 0,
+        "training_runs": done.count(),
+        "federated_rounds": db.query(func.coalesce(func.sum(ModelTraining.current_round), 0))
+                              .filter(ModelTraining.status == JOB_COMPLETED).scalar(),
+        "node_updates": db.query(func.coalesce(func.sum(ModelTraining.current_round * ModelTraining.num_nodes), 0))
+                          .filter(ModelTraining.status == JOB_COMPLETED).scalar(),
+        "best_accuracy": db.query(func.max(ModelTraining.accuracy)).filter(ModelTraining.status == JOB_COMPLETED).scalar(),
+    }
+
+
 @router.get("/dashboard/admin")
 def admin_dashboard(admin: User = Depends(admin_only), db: Session = Depends(get_db)):
     users_by_role = dict(db.query(User.role, func.count()).group_by(User.role).all())

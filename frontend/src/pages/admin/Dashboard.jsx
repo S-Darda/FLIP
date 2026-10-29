@@ -27,7 +27,7 @@ export default function AdminDashboard() {
   return (
     <>
       <PageHeader title="Performance Dashboard" subtitle="Platform health, approvals waiting on you and live training activity." />
-      <div className="stats">
+      <div className="stats stats-6">
         <Stat icon="project" tone="c3" label="Pending approvals" value={data.projects.Pending}
               hint={<Link to="/admin/projects?status=Pending">Review now</Link>} />
         <Stat icon="users" tone="c1" label="Users" value={data.users.Admin + data.users.Developer}
@@ -69,7 +69,7 @@ export default function AdminDashboard() {
           {data.running_jobs.map(j => (
             <Link key={j.training_id} to={`/admin/training/${j.training_id}`} className="run-row">
               <div><strong>{j.project_name}</strong> <small className="muted">#{j.training_id} · {j.algorithm} · {j.num_nodes} nodes</small></div>
-              <Progress value={j.current_round} max={j.rounds} />
+              <Progress value={j.current_round} max={j.rounds} live={j.status === 'In Progress'} />
               <small>Round {j.current_round}/{j.rounds} · accuracy {pct(j.accuracy)}</small>
             </Link>
           ))}

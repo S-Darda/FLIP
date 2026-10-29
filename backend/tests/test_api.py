@@ -179,6 +179,12 @@ def test_logs_scoping_and_export(client, dev1, admin):
     assert r.status_code == 200 and r.text.startswith("log_id,timestamp_utc")
 
 
+def test_public_stats_needs_no_login(client):
+    r = client.get("/api/public/stats")
+    assert r.status_code == 200
+    assert {"projects", "training_runs", "node_updates", "best_accuracy"} <= r.json().keys()
+
+
 def test_websocket_requires_auth_and_streams(client, dev1):
     with client.websocket_connect("/ws") as ws:
         ws.send_text('{"type":"auth","token":"nope"}')

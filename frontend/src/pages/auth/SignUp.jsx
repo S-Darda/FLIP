@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { homeFor, useAuth } from '../../auth'
 import Icon from '../../components/Icon'
+import { ThemeToggle } from '../../components/AppShell'
 import Logo from '../../components/Logo'
+import { Aurora } from '../../components/ui'
 import { PasswordInput } from './SignIn'
 
 export default function SignUp() {
@@ -34,6 +36,8 @@ export default function SignUp() {
 
   return (
     <div className="auth-page">
+      <Aurora />
+      <ThemeToggle className="auth-theme" />
       <div className="auth-brand"><Logo /></div>
       <form className="auth-card" onSubmit={submit}>
         <h1>Create a developer account</h1>

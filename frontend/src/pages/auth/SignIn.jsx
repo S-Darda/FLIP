@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { homeFor, useAuth } from '../../auth'
 import Icon from '../../components/Icon'
+import { ThemeToggle } from '../../components/AppShell'
 import Logo from '../../components/Logo'
+import { Aurora } from '../../components/ui'
 
 export function PasswordInput({ id, value, onChange, placeholder, autoComplete = 'current-password' }) {
   const [show, setShow] = useState(false)
@@ -48,6 +50,8 @@ export default function SignIn({ portal }) {
 
   return (
     <div className={`auth-page ${admin ? 'auth-admin' : ''}`}>
+      <Aurora />
+      <ThemeToggle className="auth-theme" />
       <div className="auth-brand"><Logo /></div>
       <form className="auth-card" onSubmit={submit} noValidate>
         <h1>{admin ? 'Admin Sign In' : 'Model Developer Sign In'}</h1>

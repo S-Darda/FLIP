@@ -51,7 +51,7 @@ export default function DevDashboard() {
           {data.jobs.slice(0, 5).map(j => (
             <Link key={j.training_id} to={`/app/training/${j.training_id}`} className="run-row">
               <div><strong>{j.project_name}</strong> <small className="muted">#{j.training_id}</small> <Badge status={j.status} /></div>
-              <Progress value={j.current_round} max={j.rounds} />
+              <Progress value={j.current_round} max={j.rounds} live={j.status === 'In Progress'} />
               <small>Round {j.current_round}/{j.rounds} · accuracy {pct(j.accuracy)}</small>
             </Link>
           ))}

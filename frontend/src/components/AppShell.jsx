@@ -4,31 +4,51 @@ import { api } from '../api'
 import { useAuth } from '../auth'
 import { ago } from '../format'
 import { useRealtime, useRealtimeEvent } from '../realtime'
+import { useTheme } from '../theme'
 import { useToast } from '../toast'
+import CommandPalette from './CommandPalette'
 import Icon from './Icon'
 import Logo from './Logo'
-import { Avatar } from './ui'
+import { Aurora, Avatar } from './ui'
 
 const NAV = {
   admin: [
+    { section: 'Overview' },
     { to: '/admin', icon: 'dashboard', label: 'Dashboard', end: true },
-    { to: '/admin/projects', icon: 'project', label: 'Manage Projects' },
-    { to: '/admin/users', icon: 'users', label: 'Users and Roles' },
-    { to: '/admin/logs', icon: 'logs', label: 'Monitoring and Logging' },
-    { to: '/admin/training', icon: 'nodes', label: 'Federated Training Control' },
-    { to: '/admin/models', icon: 'model', label: 'Model Approvals' },
-    { to: '/admin/security', icon: 'shield', label: 'Security' },
     { to: '/admin/live', icon: 'live', label: 'Real-Time Updates' },
+    { section: 'Governance' },
+    { to: '/admin/projects', icon: 'project', label: 'Manage Projects' },
+    { to: '/admin/models', icon: 'model', label: 'Model Approvals' },
+    { to: '/admin/users', icon: 'users', label: 'Users and Roles' },
+    { section: 'Training' },
+    { to: '/admin/training', icon: 'nodes', label: 'Federated Training Control' },
+    { to: '/admin/compare', icon: 'trophy', label: 'Compare and Leaderboard' },
+    { section: 'Operations' },
+    { to: '/admin/logs', icon: 'logs', label: 'Monitoring and Logging' },
+    { to: '/admin/security', icon: 'shield', label: 'Security' },
   ],
   dev: [
+    { section: 'Overview' },
     { to: '/app', icon: 'dashboard', label: 'Dashboard', end: true },
+    { to: '/app/live', icon: 'live', label: 'Real-Time Updates' },
+    { section: 'Projects' },
     { to: '/app/apply', icon: 'plus', label: 'Apply for Approval' },
     { to: '/app/projects', icon: 'project', label: 'Your Projects' },
+    { section: 'Training' },
     { to: '/app/training', icon: 'nodes', label: 'Training Runs' },
+    { to: '/app/compare', icon: 'trophy', label: 'Compare and Leaderboard' },
     { to: '/app/models', icon: 'model', label: 'Model Submissions' },
+    { section: 'Audit' },
     { to: '/app/logs', icon: 'logs', label: 'Activity Logs' },
-    { to: '/app/live', icon: 'live', label: 'Real-Time Updates' },
   ],
+}
+
+function useOutside(ref, onOut) {
+  useEffect(() => {
+    const close = e => ref.current && !ref.current.contains(e.target) && onOut()
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [ref, onOut])
 }
 
 function NotificationBell({ base }) {
@@ -37,14 +57,9 @@ function NotificationBell({ base }) {
   const ref = useRef(null)
   const navigate = useNavigate()
   const toast = useToast()
+  useOutside(ref, () => setOpen(false))
 
-  const load = () => api('/api/notifications').then(setData).catch(() => {})
-  useEffect(() => { load() }, [])
-  useEffect(() => {
-    const close = e => ref.current && !ref.current.contains(e.target) && setOpen(false)
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [])
+  useEffect(() => { api('/api/notifications').then(setData).catch(() => {}) }, [])
   useRealtimeEvent('notification', e => {
     setData(d => ({ unread: d.unread + 1, items: [e.notification, ...d.items].slice(0, 30) }))
     toast(e.notification.message, e.kind === 'error' ? 'error' : e.kind === 'warning' ? 'warning' : 'success')
@@ -69,7 +84,7 @@ function NotificationBell({ base }) {
     <div className="bell" ref={ref}>
       <button className="icon-btn" onClick={toggle} aria-label={`Notifications (${data.unread} unread)`} aria-expanded={open}>
         <Icon name="bell" size={20} />
-        {data.unread > 0 && <span className="bell-dot">{data.unread > 9 ? '9+' : data.unread}</span>}
+        {data.unread > 0 && <span key={data.unread} className="bell-dot">{data.unread > 9 ? '9+' : data.unread}</span>}
       </button>
       {open && (
         <div className="dropdown bell-menu">
@@ -87,57 +102,12 @@ function NotificationBell({ base }) {
   )
 }
 
-function GlobalSearch({ base }) {
-  const [q, setQ] = useState('')
-  const [res, setRes] = useState(null)
-  const navigate = useNavigate()
-  const ref = useRef(null)
-  useEffect(() => {
-    if (q.trim().length < 2) { setRes(null); return undefined }
-    const t = setTimeout(() => api(`/api/search?q=${encodeURIComponent(q.trim())}`).then(setRes).catch(() => {}), 200)
-    return () => clearTimeout(t)
-  }, [q])
-  useEffect(() => {
-    const close = e => ref.current && !ref.current.contains(e.target) && setRes(null)
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [])
-  const pick = to => { setQ(''); setRes(null); navigate(to) }
-  const hasResults = res && (res.projects.length || res.users?.length)
-  return (
-    <div className="search" ref={ref}>
-      <Icon name="search" />
-      <input type="search" placeholder={base === '/admin' ? 'Search projects and users…' : 'Search your projects…'}
-             value={q} onChange={e => setQ(e.target.value)} aria-label="Search" />
-      {res && (
-        <div className="dropdown search-menu">
-          {!hasResults && <div className="dropdown-empty">No matches for “{q}”.</div>}
-          {res.projects.map(p => (
-            <button key={`p${p.project_id}`} className="bell-item" onClick={() => pick(`${base}/projects/${p.project_id}`)}>
-              <span><Icon name="project" size={14} /> {p.project_name}</span><small>{p.status}</small>
-            </button>
-          ))}
-          {res.users?.map(u => (
-            <button key={`u${u.user_id}`} className="bell-item" onClick={() => pick(`/admin/users?q=${encodeURIComponent(u.email)}`)}>
-              <span><Icon name="user" size={14} /> {u.username}</span><small>{u.email}</small>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 function UserMenu({ base }) {
   const { user, logout } = useAuth()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const navigate = useNavigate()
-  useEffect(() => {
-    const close = e => ref.current && !ref.current.contains(e.target) && setOpen(false)
-    document.addEventListener('mousedown', close)
-    return () => document.removeEventListener('mousedown', close)
-  }, [])
+  useOutside(ref, () => setOpen(false))
   const signOut = async () => {
     await logout()
     navigate(base === '/admin' ? '/admin/signin' : '/signin')
@@ -160,46 +130,82 @@ function UserMenu({ base }) {
   )
 }
 
+export function ThemeToggle({ className = '' }) {
+  const { resolved, toggle } = useTheme()
+  const next = resolved === 'dark' ? 'light' : 'dark'
+  return (
+    <button className={`icon-btn theme-btn ${className}`} onClick={toggle} aria-label={`Switch to ${next} theme`} title={`Switch to ${next} theme`}>
+      <Icon name={resolved === 'dark' ? 'sun' : 'moon'} size={19} />
+    </button>
+  )
+}
+
 export default function AppShell({ variant }) {
   const base = variant === 'admin' ? '/admin' : '/app'
   const { connected } = useRealtime()
   const [navOpen, setNavOpen] = useState(false)
+  const [palette, setPalette] = useState(false)
   const location = useLocation()
+  const links = NAV[variant].filter(n => n.to)
+
   useEffect(() => setNavOpen(false), [location.pathname])
-  const current = NAV[variant].filter(n => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)))
+  useEffect(() => {
+    const onKey = e => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setPalette(p => !p) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  const current = links.filter(n => (n.end ? location.pathname === n.to : location.pathname.startsWith(n.to)))
     .sort((a, b) => b.to.length - a.to.length)[0]
 
   return (
     <div className={`shell shell-${variant} ${navOpen ? 'nav-open' : ''}`}>
+      <Aurora />
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <Logo to={base} size={44} />
-          <span className="sidebar-role">{variant === 'admin' ? 'Admin console' : 'Developer portal'}</span>
+          <Logo to={base} size={40} label={false} />
+          <div>
+            <div className="logo-text" style={{ color: '#fff' }}>FLIP</div>
+            <span className="sidebar-role">{variant === 'admin' ? 'Admin console' : 'Developer portal'}</span>
+          </div>
         </div>
         <nav aria-label="Main">
-          {NAV[variant].map(n => (
-            <NavLink key={n.to} to={n.to} end={n.end} className="nav-link">
-              <Icon name={n.icon} /> <span>{n.label}</span>
-            </NavLink>
-          ))}
+          {NAV[variant].map((n, i) => n.section
+            ? <div key={`s${i}`} className="nav-section">{n.section}</div>
+            : (
+              <NavLink key={n.to} to={n.to} end={n.end} className="nav-link">
+                <Icon name={n.icon} /> <span>{n.label}</span>
+              </NavLink>
+            ))}
         </nav>
         <div className={`ws-status ${connected ? 'on' : ''}`} title="Real-time connection">
-          <span className="dot" /> {connected ? 'Live updates on' : 'Reconnecting…'}
+          <span className="dot" /> {connected ? 'Live updates connected' : 'Reconnecting…'}
         </div>
       </aside>
       <div className="sidebar-scrim" onClick={() => setNavOpen(false)} />
       <div className="main">
         <header className="topbar">
           <button className="icon-btn menu-btn" onClick={() => setNavOpen(o => !o)} aria-label="Menu"><Icon name="menu" /></button>
-          <div className="topbar-title">{current?.label || 'FLIP'}</div>
-          <GlobalSearch base={base} />
+          <div className="topbar-title">
+            <small>{variant === 'admin' ? 'Admin console' : 'Developer portal'}</small>
+            {current?.label || 'FLIP'}
+          </div>
+          <button className="cmdk-trigger" onClick={() => setPalette(true)} aria-label="Open command palette">
+            <Icon name="search" size={16} /><span>Search or jump to…</span><kbd>Ctrl K</kbd>
+          </button>
+          <ThemeToggle />
           <NotificationBell base={base} />
           <UserMenu base={base} />
         </header>
         <main className="content">
-          <Outlet />
+          <div key={location.pathname} className="page">
+            <Outlet />
+          </div>
         </main>
       </div>
+      <CommandPalette open={palette} onClose={() => setPalette(false)} nav={links} base={base} />
     </div>
   )
 }

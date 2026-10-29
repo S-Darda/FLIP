@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 
-function useWidth(fallback = 600) {
+function useWidth(fallback = 300) {
   const ref = useRef(null)
   const [width, setWidth] = useState(fallback)
+  // Measure before paint so a chart never renders wider than its container on small screens.
+  useLayoutEffect(() => {
+    if (ref.current) setWidth(Math.max(200, ref.current.clientWidth))
+  }, [])
   useEffect(() => {
     if (!ref.current) return undefined
     const ro = new ResizeObserver(([e]) => setWidth(Math.max(200, e.contentRect.width)))
@@ -31,6 +35,7 @@ function niceTicks(min, max, count = 4) {
 export function LineChart({ series, height = 240, yFormat = v => v, xLabel = '', yDomain, emptyText = 'No data yet' }) {
   const [ref, width] = useWidth()
   const [hover, setHover] = useState(null)
+  const gid = `area-${useId().replace(/:/g, '')}`
   const all = series.flatMap(s => s.points)
   if (!all.length) return <div ref={ref} className="chart-empty" style={{ height }}>{emptyText}</div>
 
@@ -67,13 +72,27 @@ export function LineChart({ series, height = 240, yFormat = v => v, xLabel = '',
         ))}
         {xTicks.map(t => <text key={t} x={sx(t)} y={height - pad.b + 16} className="axis" textAnchor="middle">{t}</text>)}
         {xLabel && <text x={pad.l + iw / 2} y={height - 4} className="axis" textAnchor="middle">{xLabel}</text>}
+        {series.length === 1 && series[0].points.length > 1 && (
+          <>
+            <defs>
+              <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={series[0].color} stopOpacity=".32" />
+                <stop offset="100%" stopColor={series[0].color} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path className="area" fill={`url(#${gid})`}
+                  d={`${series[0].points.map((p, i) => `${i ? 'L' : 'M'}${sx(p.x)},${sy(p.y)}`).join('')}L${sx(series[0].points.at(-1).x)},${pad.t + ih}L${sx(series[0].points[0].x)},${pad.t + ih}Z`} />
+          </>
+        )}
         {series.map(s => s.points.length > 0 && (
           <g key={s.name}>
-            <path d={s.points.map((p, i) => `${i ? 'L' : 'M'}${sx(p.x)},${sy(p.y)}`).join('')}
-                  fill="none" stroke={s.color} strokeWidth={s.width || 2} strokeDasharray={s.dashed ? '4 4' : undefined}
+            <path className={s.dashed ? undefined : 'line'} pathLength={s.dashed ? undefined : 1}
+                  d={s.points.map((p, i) => `${i ? 'L' : 'M'}${sx(p.x)},${sy(p.y)}`).join('')}
+                  fill="none" stroke={s.color} strokeWidth={s.width || 2.4} strokeDasharray={s.dashed ? '4 4' : undefined}
                   strokeLinejoin="round" strokeLinecap="round" />
             {s.points.length <= 40 && !s.dashed && s.points.map(p => (
-              <circle key={p.x} cx={sx(p.x)} cy={sy(p.y)} r={hover === p.x ? 4 : 2.2} fill={s.color} />
+              <circle key={p.x} className="pt" cx={sx(p.x)} cy={sy(p.y)} r={hover === p.x ? 4.5 : 2.4} fill={s.color}
+                      stroke="var(--surface-solid)" strokeWidth={hover === p.x ? 2 : 0} />
             ))}
           </g>
         ))}
@@ -122,8 +141,9 @@ export function BarChart({ data, height = 200, color = 'var(--c1)', yFormat = v 
         {data.map((d, i) => (
           <g key={d.label} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)}>
             <rect x={pad.l + i * bw} y={pad.t} width={bw} height={ih} fill="transparent" />
-            <rect x={pad.l + i * bw + bw * 0.18} y={sy(d.value)} width={bw * 0.64} height={Math.max(0, pad.t + ih - sy(d.value))}
-                  rx="3" fill={d.color || color} opacity={hover === null || hover === i ? 1 : 0.55} />
+            <rect className="bar" style={{ animationDelay: `${Math.min(i * 30, 600)}ms` }}
+                  x={pad.l + i * bw + bw * 0.18} y={sy(d.value)} width={bw * 0.64} height={Math.max(0, pad.t + ih - sy(d.value))}
+                  rx="5" fill={d.color || color} opacity={hover === null || hover === i ? 1 : 0.45} />
             {i % every === 0 && (
               <text x={pad.l + i * bw + bw / 2} y={height - 6} className="axis" textAnchor="middle">{d.label}</text>
             )}
@@ -167,7 +187,7 @@ export function Donut({ data, size = 150, label }) {
         {total > 0 && data.map(d => {
           const len = (d.value / total) * c
           const el = (
-            <circle key={d.label} cx={size / 2} cy={size / 2} r={r} fill="none" stroke={d.color} strokeWidth="16"
+            <circle key={d.label} className="seg" cx={size / 2} cy={size / 2} r={r} fill="none" stroke={d.color} strokeWidth="16"
                     strokeDasharray={`${Math.max(0, len - 2)} ${c}`} strokeDashoffset={-offset}
                     transform={`rotate(-90 ${size / 2} ${size / 2})`} />
           )

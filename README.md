@@ -8,6 +8,8 @@ A web platform where organisations train machine learning models together withou
 | Admin console `/admin` | Platform admins | Dashboard, project approvals with feedback, users and roles, logs, training control, model approvals, security, live event feed |
 | Developer portal `/app` | Model developers | Apply for approval (with dataset upload), your projects, start and watch federated training live, training reports, model submissions, activity logs |
 
+**Highlights:** glass-and-gradient theme with light and dark modes · animated live federation view (nodes send updates, the global model broadcasts back) · run leaderboard and side-by-side comparison · Ctrl+K command palette · count-up stats, animated charts and page transitions (all respect *reduce motion*).
+
 **Stack:** React 18 + Vite + React Router · FastAPI · SQLAlchemy 2 · SQLite (dev) or MySQL · JWT + bcrypt · WebSockets · numpy
 
 ## What actually happens when you train
@@ -88,7 +90,7 @@ cd flip/backend
 .venv/Scripts/python -m pytest -q
 ```
 
-15 tests cover sign-in and lockout, RBAC, session revocation, the project approve/reject/resubmit lifecycle, upload validation, training on an uploaded CSV, FedProx + DP + partial participation, model submissions, log scoping and export, the WebSocket handshake, and the FL engine itself.
+16 tests cover sign-in and lockout, RBAC, session revocation, the project approve/reject/resubmit lifecycle, upload validation, training on an uploaded CSV, FedProx + DP + partial participation, model submissions, log scoping and export, the WebSocket handshake, the public stats endpoint, and the FL engine itself.
 
 ## Configuration
 

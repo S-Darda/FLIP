@@ -48,6 +48,16 @@ export function Spinner({ label = 'Loading' }) {
   return <div className="spinner-wrap" role="status"><span className="spinner" /><span>{label}…</span></div>
 }
 
+/** Placeholder blocks shown while a page loads. */
+export function Skeleton({ rows = 3 }) {
+  return (
+    <div aria-hidden="true">
+      <div className="stats">{[0, 1, 2, 3].map(i => <div key={i} className="skeleton" style={{ height: 86 }} />)}</div>
+      {Array.from({ length: rows }, (_, i) => <div key={i} className="skeleton" style={{ height: 200, marginBottom: 20 }} />)}
+    </div>
+  )
+}
+
 export function ErrorBox({ error, onRetry }) {
   if (!error) return null
   return (
@@ -70,13 +80,46 @@ export function Empty({ icon = 'info', title, children, action }) {
   )
 }
 
+/** Animates the first number inside `value` (e.g. "82.0%", 14, "3/4") from 0 up to its final value. */
+export function CountUp({ value, duration = 900 }) {
+  const text = String(value ?? '')
+  const m = text.match(/-?\d[\d,]*\.?\d*/)
+  const target = m ? parseFloat(m[0].replace(/,/g, '')) : null
+  const decimals = m && m[0].includes('.') ? m[0].split('.')[1].length : 0
+  const [shown, setShown] = useState(target)
+  const from = useRef(0)
+  useEffect(() => {
+    if (target === null) return undefined
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { setShown(target); return undefined }
+    const start = performance.now()
+    const begin = from.current
+    let raf
+    const tick = now => {
+      const t = Math.min(1, (now - start) / duration)
+      const eased = 1 - (1 - t) ** 3
+      setShown(begin + (target - begin) * eased)
+      if (t < 1) raf = requestAnimationFrame(tick)
+      else from.current = target
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target, duration])
+  if (target === null) return text
+  const formatted = m[0].includes(',') ? shown.toLocaleString(undefined, { maximumFractionDigits: decimals }) : shown.toFixed(decimals)
+  return text.replace(m[0], formatted)
+}
+
+export function Aurora() {
+  return <div className="aurora" aria-hidden="true"><span /><span /><span /></div>
+}
+
 export function Stat({ label, value, hint, icon, tone = 'c1' }) {
   return (
     <div className="stat">
       {icon && <span className={`stat-icon tone-${tone}`}><Icon name={icon} size={20} /></span>}
       <div>
         <div className="stat-label">{label}</div>
-        <div className="stat-value">{value}</div>
+        <div className="stat-value">{typeof value === 'string' || typeof value === 'number' ? <CountUp value={value} /> : value}</div>
         {hint && <div className="stat-hint">{hint}</div>}
       </div>
     </div>
@@ -142,9 +185,9 @@ export function Tabs({ tabs, value, onChange }) {
   )
 }
 
-export function Progress({ value, max = 1, tone }) {
+export function Progress({ value, max = 1, tone, live }) {
   const p = max ? Math.min(100, (value / max) * 100) : 0
-  return <div className="progress" role="progressbar" aria-valuenow={Math.round(p)} aria-valuemin="0" aria-valuemax="100">
+  return <div className={`progress ${live ? 'live' : ''}`} role="progressbar" aria-valuenow={Math.round(p)} aria-valuemin="0" aria-valuemax="100">
     <span className={tone ? `tone-bg-${tone}` : ''} style={{ width: `${p}%` }} />
   </div>
 }
