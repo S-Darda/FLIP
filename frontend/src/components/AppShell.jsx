@@ -9,7 +9,7 @@ import { useToast } from '../toast'
 import CommandPalette from './CommandPalette'
 import Icon from './Icon'
 import Logo from './Logo'
-import { Aurora, Avatar } from './ui'
+import { Avatar, ErrorBoundary } from './ui'
 
 const NAV = {
   admin: [
@@ -20,6 +20,7 @@ const NAV = {
     { to: '/admin/projects', icon: 'project', label: 'Manage Projects' },
     { to: '/admin/models', icon: 'model', label: 'Model Approvals' },
     { to: '/admin/users', icon: 'users', label: 'Users and Roles' },
+    { to: '/admin/sites', icon: 'globe', label: 'Sites and Organisations' },
     { section: 'Training' },
     { to: '/admin/training', icon: 'nodes', label: 'Federated Training Control' },
     { to: '/admin/compare', icon: 'trophy', label: 'Compare and Leaderboard' },
@@ -32,8 +33,8 @@ const NAV = {
     { to: '/app', icon: 'dashboard', label: 'Dashboard', end: true },
     { to: '/app/live', icon: 'live', label: 'Real-Time Updates' },
     { section: 'Projects' },
-    { to: '/app/apply', icon: 'plus', label: 'Apply for Approval' },
-    { to: '/app/projects', icon: 'project', label: 'Your Projects' },
+    { to: '/app/apply', icon: 'plus', label: 'New Study' },
+    { to: '/app/projects', icon: 'project', label: 'Your Studies' },
     { section: 'Training' },
     { to: '/app/training', icon: 'nodes', label: 'Training Runs' },
     { to: '/app/compare', icon: 'trophy', label: 'Compare and Leaderboard' },
@@ -143,6 +144,7 @@ export function ThemeToggle({ className = '' }) {
 export default function AppShell({ variant }) {
   const base = variant === 'admin' ? '/admin' : '/app'
   const { connected } = useRealtime()
+  const { user } = useAuth()
   const [navOpen, setNavOpen] = useState(false)
   const [palette, setPalette] = useState(false)
   const location = useLocation()
@@ -162,10 +164,9 @@ export default function AppShell({ variant }) {
 
   return (
     <div className={`shell shell-${variant} ${navOpen ? 'nav-open' : ''}`}>
-      <Aurora />
       <aside className="sidebar">
         <div className="sidebar-brand">
-          <Logo to={base} size={40} label={false} />
+          <Logo to={base} size={34} label={false} />
           <div>
             <div className="logo-text" style={{ color: '#fff' }}>FLIP</div>
             <span className="sidebar-role">{variant === 'admin' ? 'Admin console' : 'Developer portal'}</span>
@@ -199,9 +200,13 @@ export default function AppShell({ variant }) {
           <NotificationBell base={base} />
           <UserMenu base={base} />
         </header>
+        {variant === 'admin' && !user.mfa_enabled && (
+          <div className="banner"><Icon name="shield" size={15} /><span>Two-factor authentication is off for this admin account.</span>
+            <Link to="/admin/account">Turn it on</Link></div>
+        )}
         <main className="content">
-          <div key={location.pathname} className="page">
-            <Outlet />
+          <div key={location.pathname} className={`page ${/\/training\/\d+/.test(location.pathname) ? 'scroll' : ''}`}>
+            <ErrorBoundary key={location.pathname}><Outlet /></ErrorBoundary>
           </div>
         </main>
       </div>

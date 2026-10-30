@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Component, useCallback, useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import Icon from './Icon'
 
@@ -105,8 +105,33 @@ export function CountUp({ value, duration = 900 }) {
     return () => cancelAnimationFrame(raf)
   }, [target, duration])
   if (target === null) return text
-  const formatted = m[0].includes(',') ? shown.toLocaleString(undefined, { maximumFractionDigits: decimals }) : shown.toFixed(decimals)
+  // `shown` lags one render behind when the value first becomes numeric (e.g. "—" -> "0.85").
+  const current = typeof shown === 'number' && Number.isFinite(shown) ? shown : target
+  const formatted = m[0].includes(',') ? current.toLocaleString(undefined, { maximumFractionDigits: decimals }) : current.toFixed(decimals)
   return text.replace(m[0], formatted)
+}
+
+/** Keeps a crash in one page from blanking the whole app. */
+export class ErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { error: null }
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error }
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children
+    return (
+      <div className="alert alert-error" role="alert">
+        <Icon name="warning" />
+        <span>This page hit an error: {String(this.state.error.message || this.state.error)}</span>
+        <button className="btn btn-sm" onClick={() => this.setState({ error: null })}>Try again</button>
+      </div>
+    )
+  }
 }
 
 export function Aurora() {
@@ -146,6 +171,23 @@ export function Modal({ title, onClose, children, footer, wide }) {
         {footer && <div className="modal-foot">{footer}</div>}
       </div>
     </div>
+  )
+}
+
+/** A card with a fixed header and a body that scrolls on its own, so pages can fit one screen. */
+export function Panel({ title, subtitle, actions, children, footer, flush, className = '', bodyRef }) {
+  return (
+    <section className={`panel ${className}`}>
+      {(title || actions) && (
+        <div className="panel-head">
+          {title && <h2>{title}</h2>}
+          {subtitle && <small>{subtitle}</small>}
+          {actions && <div className="panel-actions">{actions}</div>}
+        </div>
+      )}
+      <div className={`panel-body ${flush ? 'flush' : ''}`} ref={bodyRef}>{children}</div>
+      {footer && <div className="panel-foot">{footer}</div>}
+    </section>
   )
 }
 

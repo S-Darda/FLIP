@@ -218,7 +218,7 @@ def build_pdf(run: dict, project: dict, generated_by: str) -> bytes:
     ptext = (f"Client-level differential privacy was applied, spending ε = {priv['epsilon']:.2f} at δ = {priv['delta']:.0e}."
              if priv.get("guarantee") else "No differential privacy was applied, so the model carries no formal privacy guarantee.")
     story += [P("1. Summary", "h1"),
-              P(f"This report describes a {esc(run['mode_label']).lower()} run of the study <i>{esc(project['project_name'])}</i>, "
+              P(f"This report describes a {esc(run['mode_label'])} run of the study <i>{esc(project['project_name'])}</i>, "
                 f"a {task} task{(' predicting <b>' + esc(project['target']) + '</b>') if project.get('target') else ''}. "
                 f"{sites} site(s) took part over {run['current_round']} round(s) of {esc(run['algorithm'])} aggregation "
                 f"using a {esc(run['model_label']).lower()} model. {headline} {ptext}"),
@@ -248,7 +248,7 @@ def build_pdf(run: dict, project: dict, generated_by: str) -> bytes:
                             num.table("Study configuration for this run.")])]
 
     # ---- 3 results
-    story.append(P("3. Results", "h1"))
+    results_heading = P("3. Results", "h1")
     if task == "classification":
         metrics = [("Accuracy", pct(rep.get("accuracy"))), ("Macro precision", f3(rep.get("precision"))),
                    ("Macro recall", f3(rep.get("recall"))), ("Macro F1", f3(rep.get("f1"))),
@@ -258,7 +258,7 @@ def build_pdf(run: dict, project: dict, generated_by: str) -> bytes:
         metrics = [("RMSE", f3(rep.get("rmse"))), ("MAE", f3(rep.get("mae"))), ("R²", f3(rep.get("r2"))),
                    ("Loss (standardised)", f3(rep.get("loss"))), ("Test rows (all sites)", rep.get("n"))]
     val = rep.get("validation") or {}
-    story += [KeepTogether([kv_table(metrics), num.table("Final metrics on the pooled test splits.")])]
+    story += [KeepTogether([results_heading, kv_table(metrics), num.table("Final metrics on the pooled test splits.")])]
     metric_key, metric_name = ("accuracy", "Validation accuracy") if task == "classification" else ("rmse", "Validation RMSE")
     pts = [(r["round"], r[metric_key]) for r in rounds if r.get(metric_key) is not None]
     story += [KeepTogether([line_chart([{"name": metric_name, "points": pts}], metric_name, y_fmt="%.2f"),

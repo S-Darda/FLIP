@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Badge, Empty, ErrorBox, PageHeader, Spinner, useApi } from '../../components/ui'
+import { Badge, Empty, ErrorBox, PageHeader, Panel, Spinner, useApi } from '../../components/ui'
 import { ago, pct } from '../../format'
 import { useRealtimeEvent } from '../../realtime'
 
@@ -13,7 +13,7 @@ export default function DevModels() {
       {loading && !data ? <Spinner /> : data?.length === 0 ? (
         <Empty icon="model" title="No models submitted">Open a completed training report and choose “Submit model”.</Empty>
       ) : (
-        <div className="table-wrap card flush">
+        <Panel className="fill" flush>
           <table className="table">
             <thead><tr><th>Model</th><th>Project</th><th>Run</th><th>Accuracy</th><th>Status</th><th>Admin comment</th><th>Submitted</th></tr></thead>
             <tbody>{data?.map(s => (
@@ -28,7 +28,7 @@ export default function DevModels() {
               </tr>
             ))}</tbody>
           </table>
-        </div>
+        </Panel>
       )}
     </>
   )

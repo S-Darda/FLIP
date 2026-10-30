@@ -8,3 +8,5 @@ backend/storage/
 .pytest_cache/
 flipml/*.egg-info/
 agent/*.egg-info/
+.flip-demo-sites/
+.flip-agent/

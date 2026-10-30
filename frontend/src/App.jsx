@@ -8,6 +8,7 @@ import ManageProjects from './pages/admin/ManageProjects'
 import ModelApprovals from './pages/admin/ModelApprovals'
 import ProjectReview from './pages/admin/ProjectReview'
 import Security from './pages/admin/Security'
+import Sites from './pages/admin/Sites'
 import UsersRoles from './pages/admin/UsersRoles'
 import SignIn from './pages/auth/SignIn'
 import SignUp from './pages/auth/SignUp'
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="projects" element={<ManageProjects />} />
         <Route path="projects/:id" element={<ProjectReview />} />
         <Route path="users" element={<UsersRoles />} />
+        <Route path="sites" element={<Sites />} />
         <Route path="logs" element={<Logs admin />} />
         <Route path="training" element={<TrainingList admin />} />
         <Route path="training/:id" element={<TrainingRun admin />} />

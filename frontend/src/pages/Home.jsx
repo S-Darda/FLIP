@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: 'nodes', title: 'FedAvg and FedProx', text: 'Sample-weighted averaging or a proximal term for uneven, non-IID data across institutions.' },
   { icon: 'lock', title: 'Differential privacy', text: 'Clip each site’s update and add calibrated noise. A Rényi-DP accountant reports the client-level (ε, δ) actually spent.' },
   { icon: 'live', title: 'Live round-by-round', text: 'Watch the federation train: updates fly in, the global model improves, every node reports back.' },
-  { icon: 'trophy', title: 'Compare and rank', text: 'A leaderboard of every run, and side-by-side curves to see exactly which settings win.' },
+  { icon: 'trophy', title: 'Federated AutoML', text: 'Bounded searches over models and settings, selected on validation data, with a signed artefact and a PDF report for every run.' },
   { icon: 'logs', title: 'Governed and audited', text: 'Admin approval for projects and models, role-based access, and a searchable audit trail.' },
 ]
 
@@ -80,10 +80,10 @@ export default function Home() {
 
       <section className="hero">
         <div>
-          <span className="hero-eyebrow"><b>New</b> Live federation view, run leaderboard and dark mode</span>
+          <span className="hero-eyebrow"><b>New</b> Site agents, federated AutoML and PDF reports</span>
           <h1>Train together.<br /><span className="grad-text">Keep data local.</span></h1>
           <p className="lead">FLIP is a Federated Learning Infrastructure Platform: sites train locally and only model updates are aggregated into one shared model, with privacy controls and governance around every step.</p>
-          <p className="prototype-note"><Icon name="info" size={14} /> Research prototype: sites are simulated on the FLIP server and uploaded files are stored there. Not for real personal or sensitive data.</p>
+          <p className="prototype-note"><Icon name="info" size={14} /> Research prototype: site agents keep raw rows local, but secure aggregation isn't built yet. Not for real personal or sensitive data.</p>
           <div className="hero-actions">
             <Link className="btn btn-primary btn-lg" to={start}>Get started <Icon name="chevron" size={16} /></Link>
             <a className="btn btn-lg" href="#how">See how it works</a>

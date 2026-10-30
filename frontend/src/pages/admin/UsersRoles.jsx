@@ -3,13 +3,13 @@ import { useSearchParams } from 'react-router-dom'
 import { api, qs } from '../../api'
 import { useAuth } from '../../auth'
 import Icon from '../../components/Icon'
-import { Avatar, Badge, Empty, ErrorBox, Field, Modal, PageHeader, Spinner, useApi } from '../../components/ui'
+import { Avatar, Badge, Empty, ErrorBox, Field, Modal, PageHeader, Panel, Spinner, useApi } from '../../components/ui'
 import { ago } from '../../format'
 import { useToast } from '../../toast'
 
-const BLANK = { username: '', email: '', organisation: '', role: 'Developer', password: '', is_active: true }
+const BLANK = { username: '', email: '', organisation_id: '', role: 'Developer', password: '', is_active: true }
 
-function UserForm({ initial, onClose, onSaved }) {
+function UserForm({ initial, onClose, onSaved, orgs }) {
   const editing = Boolean(initial?.user_id)
   const [form, setForm] = useState(editing ? { ...initial, password: '' } : BLANK)
   const [error, setError] = useState('')
@@ -21,7 +21,7 @@ function UserForm({ initial, onClose, onSaved }) {
     setBusy(true)
     setError('')
     const body = { username: form.username.trim(), email: form.email.trim(), role: form.role,
-                   organisation: form.organisation?.trim() || null }
+                   organisation_id: form.organisation_id ? Number(form.organisation_id) : null }
     if (form.password) body.password = form.password
     if (editing) body.is_active = form.is_active
     try {
@@ -44,7 +44,12 @@ function UserForm({ initial, onClose, onSaved }) {
         {error && <div className="alert alert-error span-2"><Icon name="warning" /><span>{error}</span></div>}
         <Field label="Full name" htmlFor="u-name"><input id="u-name" className="input" value={form.username} onChange={set('username')} required minLength={2} /></Field>
         <Field label="Email" htmlFor="u-email"><input id="u-email" className="input" type="email" value={form.email} onChange={set('email')} required /></Field>
-        <Field label="Organisation" htmlFor="u-org"><input id="u-org" className="input" value={form.organisation || ''} onChange={set('organisation')} /></Field>
+        <Field label="Organisation" htmlFor="u-org">
+          <select id="u-org" className="input" value={form.organisation_id ?? ''} onChange={set('organisation_id')}>
+            <option value="">None</option>
+            {orgs.map(o => <option key={o.org_id} value={o.org_id}>{o.name}</option>)}
+          </select>
+        </Field>
         <Field label="Role" htmlFor="u-role" hint="Admins manage users and approve projects. Developers run projects.">
           <select id="u-role" className="input" value={form.role} onChange={set('role')}>
             <option value="Developer">Model Developer</option>
@@ -74,6 +79,7 @@ export default function UsersRoles() {
   const [role, setRole] = useState('')
   const [editing, setEditing] = useState(null)
   const { data, error, loading, reload } = useApi(`/api/users${qs({ q, role })}`)
+  const orgs = useApi('/api/orgs')
 
   const act = async (u, action, label) => {
     try {
@@ -104,8 +110,9 @@ export default function UsersRoles() {
         </select>
       </div>
       <ErrorBox error={error} onRetry={reload} />
+      <Panel className="fill" flush>
       {loading && !data ? <Spinner /> : data?.length === 0 ? <Empty icon="users" title="No users match" /> : (
-        <div className="table-wrap card flush">
+        <div>
           <table className="table">
             <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Projects</th><th>Last sign-in</th><th className="right">Actions</th></tr></thead>
             <tbody>
@@ -114,7 +121,7 @@ export default function UsersRoles() {
                   <td><div className="user-cell"><Avatar name={u.username} />
                     <div><strong>{u.username}</strong>{u.user_id === me.user_id && <span className="muted"> (you)</span>}
                       <div className="muted small">{u.email}{u.organisation && ` · ${u.organisation}`}</div></div></div></td>
-                  <td><Badge status={u.role}>{u.role === 'Developer' ? 'Model Developer' : 'Admin'}</Badge></td>
+                  <td><Badge status={u.role}>{u.role === 'Developer' ? 'Model Developer' : 'Admin'}</Badge>{u.mfa_enabled && <Badge status="Active">2FA</Badge>}</td>
                   <td>{locked(u) ? <Badge status="Locked" /> : <Badge status={u.is_active ? 'Active' : 'Disabled'} />}
                     {u.failed_logins > 0 && <div className="muted small">{u.failed_logins} failed attempt(s)</div>}</td>
                   <td>{u.project_count}</td>
@@ -135,7 +142,8 @@ export default function UsersRoles() {
           </table>
         </div>
       )}
-      {editing && <UserForm initial={editing} onClose={() => setEditing(null)}
+      </Panel>
+      {editing && <UserForm initial={editing} orgs={orgs.data || []} onClose={() => setEditing(null)}
                             onSaved={(u, wasEdit) => { setEditing(null); toast(wasEdit ? 'User updated' : `${u.email} added`, 'success'); reload(true) }} />}
     </>
   )

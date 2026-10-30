@@ -1,10 +1,27 @@
 # FLIP: gap analysis against the security architecture (v1.0 draft, 29 Oct 2026)
 
-This compares the current codebase (`v2-fullstack`) with *Technical Concept & Preliminary Security Architecture: FLIP, Security-First Federated AutoML Platform*. It is a planning aid, not a security assessment.
+This compares the codebase with *Technical Concept & Preliminary Security Architecture: FLIP, Security-First Federated AutoML Platform*. It is a planning aid, not a security assessment.
 
 **Status key:** ✅ in place · 🟡 partial or simulated · ❌ not started
 
-## Where the build stands today
+## Phase 1 status (30 Oct 2026)
+
+Phase 1 is built on branch `phase1-wip`. Delivered against the exit criterion *"no raw uploads; auth and tenancy tests pass; reproducible baseline"*:
+
+- ✅ No raw uploads: upload routes are removed; sites register schemas only, and tests check both.
+- ✅ Signed site agent (`agent/`): it enrols with a one-time token and its own Ed25519 key, signs every request with replay protection, and answers only allowlisted `prepare`, `train` and `eval` tasks.
+- ✅ Organisations, sites and tenancy: sites can only fetch and answer their own tasks, and developers can't see other developers' studies, runs or artefacts.
+- ✅ Study definitions with a policy matrix that blocks unsupported combinations.
+- ✅ Federated and Local AutoML with validation-based selection, plus regression (MAE, RMSE, R²), AUROC and calibration.
+- ✅ Admin TOTP MFA (optionally enforced), with secrets encrypted at rest.
+- ✅ Signed, versioned model artefacts.
+- ✅ A study-wide privacy budget with composition across trials (a Phase 2 item, delivered early).
+- ✅ Small-group suppression of per-site metrics (a Phase 2 item, delivered early).
+- ✅ Formatted PDF reports.
+
+Still open: secure aggregation, mTLS, robust aggregation, the attack harness, external review. The tables below describe the state **before** Phase 1 and are kept for reference.
+
+## Where the build stood before Phase 1
 
 The current build is a **single-server simulation**. Sites are simulated inside the API process, and a CSV a developer uploads is stored on the server and split across those simulated sites. In the document's terms it demonstrates the federated protocol, but it is **not** the "Federated AutoML: recommended" mode, because raw rows do leave the owner, and the coordinator can see every individual update.
 

@@ -10,7 +10,7 @@ const reducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce
 /** Red → amber → green as accuracy goes from 40% to 95%. */
 function accColor(acc) {
   if (acc == null) return 'var(--border-strong)'
-  const t = Math.max(0, Math.min(1, (acc - 0.4) / 0.55))
+  const t = Math.max(0, Math.min(1, (acc - 0.4) / 0.55))  // eslint-disable-line
   return `hsl(${Math.round(t * 145)} 72% 52%)`
 }
 
@@ -42,9 +42,9 @@ export default function NetworkViz({ nodes, round, accuracy, active, title = 'Gl
       <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Federation of ${nodes.length} nodes, round ${round}`}>
         <defs>
           <radialGradient id="hub-grad" cx="35%" cy="30%" r="80%">
-            <stop offset="0%" stopColor="#a5b4fc" />
-            <stop offset="55%" stopColor="#7c3aed" />
-            <stop offset="100%" stopColor="#0e7490" />
+            <stop offset="0%" stopColor="#5eead4" />
+            <stop offset="55%" stopColor="#0f766e" />
+            <stop offset="100%" stopColor="#1e3a8a" />
           </radialGradient>
           <filter id="soft-glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="6" result="b" />

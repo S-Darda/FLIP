@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../../api'
 import Icon from '../../components/Icon'
-import { Badge, Empty, ErrorBox, Field, Modal, PageHeader, Spinner, Tabs, useApi } from '../../components/ui'
+import { Badge, Empty, ErrorBox, Field, Modal, PageHeader, Panel, Spinner, Tabs, useApi } from '../../components/ui'
 import { ago, pct } from '../../format'
 import { useRealtimeEvent } from '../../realtime'
 import { useToast } from '../../toast'
@@ -55,7 +55,7 @@ export default function ModelApprovals() {
       <Tabs value={tab} onChange={setTab} tabs={[{ value: 'open', label: 'Awaiting decision', count: open.length }, { value: 'done', label: 'Decided' }]} />
       <ErrorBox error={error} onRetry={reload} />
       {loading && !data ? <Spinner /> : rows.length === 0 ? <Empty icon="model" title="No models here" /> : (
-        <div className="table-wrap card flush">
+        <Panel className="fill" flush>
           <table className="table">
             <thead><tr><th>Model</th><th>Project</th><th>Accuracy</th><th>Developer</th><th>Status</th><th>Requested</th><th /></tr></thead>
             <tbody>{rows.map(s => (
@@ -70,7 +70,7 @@ export default function ModelApprovals() {
               </tr>
             ))}</tbody>
           </table>
-        </div>
+        </Panel>
       )}
       {reviewing && <ReviewDialog sub={reviewing} onClose={() => setReviewing(null)}
                                   onDone={d => { setReviewing(null); toast(`Model marked ${d}`, 'success'); reload(true) }} />}

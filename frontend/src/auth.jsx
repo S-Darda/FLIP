@@ -27,8 +27,14 @@ export function AuthProvider({ children }) {
     return session.user
   }, [])
 
-  const login = useCallback(async (email, password, portal) =>
-    applySession(await api('/api/auth/login', { method: 'POST', body: { email, password, portal } })), [applySession])
+  /** Returns the user, or { mfa_token } when a second factor is needed. */
+  const login = useCallback(async (email, password, portal) => {
+    const res = await api('/api/auth/login', { method: 'POST', body: { email, password, portal } })
+    return res.mfa_required ? { mfa_token: res.mfa_token } : applySession(res)
+  }, [applySession])
+
+  const verifyMfa = useCallback(async (mfa_token, code) =>
+    applySession(await api('/api/auth/mfa/verify', { method: 'POST', body: { mfa_token, code } })), [applySession])
 
   const register = useCallback(async data =>
     applySession(await api('/api/auth/register', { method: 'POST', body: data })), [applySession])
@@ -40,7 +46,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, register, logout, setUser, applySession }}>
+    <AuthContext.Provider value={{ user, ready, login, verifyMfa, register, logout, setUser, applySession }}>
       {children}
     </AuthContext.Provider>
   )

@@ -1,37 +1,45 @@
 # FLIP: Federated Learning Infrastructure Platform
 
-A research prototype of a platform where organisations train machine learning models together through federated learning. It implements the system described in *Federated Learning Infrastructure Platform (FLIP) with FastAPI and React* (S. D. Rahman, MSc thesis).
+A research prototype of a security-first **federated AutoML** platform. Organisations train shared models while raw records stay at each data-owner site. It implements the system in *Federated Learning Infrastructure Platform (FLIP) with FastAPI and React* (S. D. Rahman, MSc thesis), extended with Phase 1 of the *Technical Concept & Preliminary Security Architecture* (see [docs/security-architecture-gap-analysis.md](docs/security-architecture-gap-analysis.md)).
 
-| Part | Who it's for | What it does |
+> **Prototype.** Site agents keep raw rows local, but secure aggregation is not built yet, so the coordinator can see each site's update. Do not use FLIP with real personal or sensitive data.
+
+| Part | Who | What |
 |---|---|---|
-| Home `/` | Anyone | Overview of the platform, how federated learning works, sign-up |
-| Admin console `/admin` | Platform admins | Dashboard, project approvals with feedback, users and roles, logs, training control, model approvals, security, live event feed |
-| Developer portal `/app` | Model developers | Apply for approval (with dataset upload), your projects, start and watch federated training live, training reports, model submissions, activity logs |
+| Home `/` | Anyone | What FLIP does, live platform statistics, sign-up |
+| Admin console `/admin` | Platform admins | Dashboard, study approvals, sites and organisations (agent enrolment), users and roles, training control, model approvals, logs, security, live events |
+| Developer portal `/app` | Model developers | Study builder, your studies, federated training with AutoML, run reports with PDF export, comparison and leaderboard, model submissions |
+| Site agent `agent/` | Data-owner sites | Keeps data local; answers only allowlisted federated tasks |
 
-**Highlights:** glass-and-gradient theme with light and dark modes · animated live federation view (nodes send updates, the global model broadcasts back) · run leaderboard and side-by-side comparison · Ctrl+K command palette · count-up stats, animated charts and page transitions (all respect *reduce motion*).
+**Stack:** React 18 + Vite · FastAPI · SQLAlchemy 2 · SQLite or MySQL · JWT + bcrypt + TOTP · Ed25519 (agents and artefacts) · WebSockets · numpy · ReportLab
 
-**Stack:** React 18 + Vite + React Router · FastAPI · SQLAlchemy 2 · SQLite (dev) or MySQL · JWT + bcrypt · WebSockets · numpy
+## How a federated run works
 
-## What actually happens when you train
+```
+ site agent (St Marys)     site agent (Riverside)     site agent (Northgate)
+   CSV stays here            CSV stays here             CSV stays here
+        │  signed HTTPS (Ed25519), long-poll for tasks  │
+        └───────────────► FLIP coordinator ◄────────────┘
+                 prepare → moments only │ train → weight update │ eval → aggregate stats
+```
 
-Training is real, not a mock-up. `backend/app/federated.py` runs federated learning across simulated nodes:
+1. **Enrol.** An admin registers a site and gets a one-time token (stored hashed, expires in 24 h). The agent generates its own Ed25519 key and enrols. Every later request is signed over method, path, timestamp and body; stale or replayed timestamps are rejected.
+2. **Register data by schema.** The agent profiles a local CSV and sends column names, types, missing counts and row count. Category values are shared only for columns with 20 or fewer values, and only values seen at least 5 times. No rows are ever sent; the server rejects schemas with unexpected content.
+3. **Design a study.** Choose the mode, sites, dataset, target, numeric features, model families, AutoML trial budget, minimum cohort and privacy policy (DP required, study-wide ε limit). A policy matrix rejects unsupported combinations, for example DP on a single site or regression on a categorical target.
+4. **Train.** Each site splits its rows 70/15/15 locally. The coordinator builds global standardisation from per-site sums, then runs FedAvg or FedProx rounds. Under DP, agents clip their updates, the coordinator verifies the clip and adds Gaussian noise, and an RDP accountant tracks client-level (ε, δ) across every run and trial. Sites that miss a round are dropouts; the run fails if fewer than the minimum cohort respond.
+5. **Evaluate on aggregates only.** Sites return confusion counts, score histograms (for AUROC), calibration bins or regression sums. Per-site figures computed on fewer than 20 rows are suppressed.
+6. **AutoML.** Trials vary the model family, learning rate and local epochs within the study's budget. The best is chosen on **validation** data; the test split is used once, for the report.
+7. **Release.** Every completed run gets a versioned, Ed25519-signed model artefact and a formatted PDF report.
 
-1. The project's data is split across *N* nodes (Hospital A, Hospital B, ...). An uploaded CSV is split with a label-skewed (non-IID) partition; without a CSV, each node gets its own synthetic data with a different class mix and feature shift.
-2. Each round, the coordinator sends the global weights to the selected nodes. Every node trains locally with mini-batch SGD and returns only a weight update.
-3. Updates are aggregated with **FedAvg** (sample-weighted) or **FedProx** (adds a proximal term for non-IID nodes).
-4. Optional **differential privacy** clips each node's update and adds Gaussian noise to the aggregate. A Rényi-DP accountant (`backend/app/privacy.py`) reports the client-level (ε, δ) actually spent, with no subsampling amplification claimed.
-5. Each node evaluates the global model on its own held-out split. Round metrics stream to the browser over WebSocket.
-6. The final report includes accuracy, macro precision, recall and F1, a confusion matrix, per-class and per-node results, and feature importance for linear models. Results and weights can be downloaded as JSON.
-
-Models: softmax logistic regression and a one-hidden-layer MLP, written directly in numpy, so the platform has no GPU or framework dependency.
-
-**CSV format:** a header row, numeric feature columns, and the label in the **last** column (for example `yes`/`no` or a class name). Missing numeric values are filled with the column mean.
+| Mode | Data | What it is |
+|---|---|---|
+| Federated AutoML | Enrolled site agents | Federated learning between organisations |
+| Local AutoML | One site agent | Private local ML, not federated (DP not offered) |
+| Simulation | Synthetic, in-process | Demos and teaching only; reports say so |
 
 ## Run it locally
 
 You need Python 3.12+ and Node 20+.
-
-**Backend** (port 8000):
 
 ```bash
 cd flip/backend
@@ -40,9 +48,7 @@ python -m venv .venv
 .venv/Scripts/python -m uvicorn app.main:app --port 8000
 ```
 
-On macOS or Linux use `.venv/bin/python`. API docs are at <http://localhost:8000/docs>.
-
-**Frontend** (port 5180, proxies `/api` and `/ws` to the backend):
+`requirements.txt` installs the shared `flipml` package and the agent in editable mode. On macOS or Linux use `.venv/bin/python`.
 
 ```bash
 cd flip/frontend
@@ -50,9 +56,22 @@ npm install
 npm run dev
 ```
 
-Open <http://localhost:5180>.
+Open <http://localhost:5180>. Then start three demo hospital agents in another terminal. Each gets its own synthetic readmissions CSV under `.flip-demo-sites/`, which is never uploaded:
 
-The first start creates `backend/flip.db` and seeds demo data, including three completed training runs. Delete `flip.db` and the `storage/` folder to start fresh.
+```bash
+cd flip
+backend/.venv/Scripts/python -m flip_agent.demo --server http://localhost:8000
+```
+
+The seeded study **Hospital Readmission Risk** (ε ≤ 60) can then be trained from the developer portal.
+
+### Running an agent at a real site
+
+```bash
+python -m flip_agent --state .flip-agent enrol --server https://flip.example.org --token flip_enrol_…
+python -m flip_agent --state .flip-agent add-dataset --name readmissions --path ./readmissions.csv
+python -m flip_agent --state .flip-agent run
+```
 
 ## Demo accounts
 
@@ -62,26 +81,25 @@ The first start creates `backend/flip.db` and seeds demo data, including three c
 | Model developer | `dev@flip.demo` | `dev12345` |
 | Model developer | `tom@flip.demo` | `dev12345` |
 
-Admins sign in at `/admin/signin`; developers at `/signin`. These are seeded test credentials. Set `FLIP_SEED=0` to skip seeding.
+These are seeded test credentials. Admins can turn on TOTP two-factor sign-in under Account; set `FLIP_REQUIRE_ADMIN_MFA=1` to make it mandatory.
 
-**Trying both roles at once:** sessions are kept per browser origin, so open the admin at `http://localhost:5180` and the developer at a second dev server on `http://127.0.0.1:5181` (`npm run dev -- --port 5181 --host 127.0.0.1`). Approving a project in one window updates the other instantly.
+## Reports
 
-## Run with Docker
+Every completed run has a report page (the one page in the app that scrolls; all other admin and developer pages fit one screen) and a **PDF** export:
 
-```bash
-cd flip
-docker compose up --build
-```
+1. Summary, generated from the results
+2. Study and method, with a configuration table
+3. Results, with numbered figures and captioned tables: metric curves, per-site curves and table, confusion matrix, per-class metrics with AUROC, reliability diagram, feature influence, AutoML trials
+4. Privacy and security statement
+5. Limitations
+6. Discussion: the study owner's own notes, written on the report page
+7. Comments and feedback: admin feedback, deployment reviews and comments from the report page
 
-Website on <http://localhost:3000>, API on <http://localhost:8000>, MySQL as the database.
+An appendix gives the artefact's SHA-256 and signing key ID. Verify a downloaded artefact against `/api/artefacts/public-key`.
 
-To add Elasticsearch and Kibana for log analytics, as described in the thesis:
+## Theme
 
-```bash
-FLIP_ELASTICSEARCH_URL=http://elasticsearch:9200 docker compose --profile monitoring up --build
-```
-
-Every audit event is then also indexed in `flip-logs`; open Kibana on <http://localhost:5601>.
+"Clinical Slate": slate surfaces, a navy rail and one teal accent, chosen for a calm, trustworthy look in regulated settings. Light and dark modes follow the system or the toggle in the top bar.
 
 ## Tests
 
@@ -90,43 +108,24 @@ cd flip/backend
 .venv/Scripts/python -m pytest -q
 ```
 
-17 tests cover sign-in and lockout, RBAC, session revocation, the project approve/reject/resubmit lifecycle, upload validation, training on an uploaded CSV, FedProx + DP + partial participation, model submissions, log scoping and export, the WebSocket handshake, the public stats endpoint, the DP accountant, and the FL engine itself.
+26 tests cover authentication, lockout, RBAC, session revocation and TOTP; enrolment, signatures and replay protection; schema-only registration and the absence of upload routes; site task isolation and tenancy; the policy matrix and privacy budget; a full federated AutoML run across three real agents with signed-artefact verification; the PDF report with notes and comments; the aggregate-only evaluation; allowlisted site tasks; and the DP accountant.
 
 ## Configuration
-
-All settings are environment variables (see `backend/app/config.py`):
 
 | Variable | Default | Purpose |
 |---|---|---|
 | `FLIP_DATABASE_URL` | SQLite file in `backend/` | e.g. `mysql+pymysql://user:pass@host/flip` |
-| `FLIP_SECRET_KEY` | dev value | **Set this in production.** Signs JWTs |
-| `FLIP_TOKEN_MINUTES` | `120` | Session length |
-| `FLIP_STORAGE_DIR` | `backend/storage` | Uploaded datasets |
-| `FLIP_MAX_UPLOAD_MB` | `50` | Per-file upload limit |
-| `FLIP_LOCKOUT_THRESHOLD` / `FLIP_LOCKOUT_MINUTES` | `5` / `15` | Account lockout after failed sign-ins |
-| `FLIP_ROUND_DELAY` | `0.35` | Pause between rounds so progress is watchable. `0` for full speed |
-| `FLIP_ELASTICSEARCH_URL` | empty | Mirror audit logs to Elasticsearch |
+| `FLIP_SECRET_KEY` | dev value | **Set in production.** Signs sessions and encrypts TOTP secrets |
+| `FLIP_REQUIRE_ADMIN_MFA` | `0` | Block admin tools until two-factor is on |
+| `FLIP_AGENT_TIMEOUT` | `60` | Seconds before a silent site counts as a dropout |
+| `FLIP_MIN_REPORT_ROWS` | `20` | Per-site figures below this many rows are suppressed |
+| `FLIP_ENROLMENT_TOKEN_HOURS` | `24` | Enrolment token lifetime |
+| `FLIP_ROUND_DELAY` | `0.35` | Pause between rounds so progress is watchable |
+| `FLIP_STORAGE_DIR` | `backend/storage` | Artefact signing key |
 | `FLIP_SEED` | `1` | Seed demo data into an empty database |
 
-## How it maps to the thesis
+The schema is versioned. In this prototype a version change rebuilds the database with fresh demo data; production would use migrations.
 
-| Thesis | Implementation |
-|---|---|
-| Users, Projects, Logs, Model Training, Model Awaiting (§4.5.6) | `users`, `projects`, `logs`, `model_training`, `model_awaiting` tables, plus `datasets`, `training_rounds` and `notifications` |
-| JWT authentication, RBAC, `admin_only` dependency (§4.7.4) | `security.py`, `deps.py`. Tokens carry a version so admins can revoke sessions |
-| `AdminRoute.js` / `DeveloperRoute.js` (§4.6.1) | `components/RouteGuards.jsx` |
-| Real-time WebSocket updates (§4.7.5) | `/ws`; the token is sent as the first message, never in the URL |
-| Log monitoring with filters and export (§6.1) | Monitoring and Logging page, CSV export, optional Elasticsearch/Kibana |
-| Security management: failed sign-ins, tokens (§6.1) | Security page: lockout, unlock, revoke sessions, disable account |
-| Model training report (Figure 15) | Training report page with metrics and confusion matrix |
-| Final models deployed or refined (§6.3) | Model submissions reviewed on Model Approvals |
+## Limits
 
-## Limits of this build
-
-See [docs/security-architecture-gap-analysis.md](docs/security-architecture-gap-analysis.md) for a full comparison with the security architecture and the phased plan to close the gaps.
-
-
-- Nodes are simulated inside one server process; there is no remote client agent yet. The aggregation, privacy and reporting code is written so a real node agent could send the same weight updates.
-- Training jobs run in the API process, so run a single worker (as the Dockerfile does). A job that is running when the server stops is marked failed on restart.
-- Uploaded CSVs are stored on the server to drive the simulation. In a real deployment raw data would stay on each node.
-- The MySQL configuration is provided for Docker but the test suite runs on SQLite.
+See the gap analysis for the full picture. In short: no secure aggregation yet (Phase 2), no mTLS, no robust aggregation against malicious sites, numeric features only, and the coordinator runs jobs in-process (single worker). There is no external security review, so the document's go/no-go gate still applies.

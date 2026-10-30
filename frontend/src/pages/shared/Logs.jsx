@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { download, qs } from '../../api'
 import Icon from '../../components/Icon'
-import { Badge, Empty, ErrorBox, PageHeader, Spinner, useApi } from '../../components/ui'
+import { Badge, Empty, ErrorBox, PageHeader, Panel, Spinner, useApi } from '../../components/ui'
 import { dateTime } from '../../format'
 import { useRealtimeEvent } from '../../realtime'
 import { useToast } from '../../toast'
@@ -70,9 +70,16 @@ export default function Logs({ admin }) {
         {Object.values(filters).some(Boolean) && <button className="btn btn-ghost btn-sm" onClick={() => setFilters(BLANK)}>Clear</button>}
       </div>
       <ErrorBox error={error} onRetry={reload} />
+      <Panel className="fill" flush footer={data && (
+        <div className="pager" style={{ width: '100%' }}>
+          <span className="muted">{data.total.toLocaleString()} entries</span>
+          <button className="btn btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</button>
+          <span>Page {page} of {pages}</span>
+          <button className="btn btn-sm" disabled={page >= pages} onClick={() => setPage(p => p + 1)}>Next</button>
+        </div>)}>
       {loading && !data ? <Spinner /> : data?.items.length === 0 ? <Empty icon="logs" title="No log entries match these filters" /> : (
         <>
-          <div className="table-wrap card flush">
+          <div>
             <table className="table logs-table">
               <thead><tr><th>Time</th><th>Level</th><th>Action</th><th>Message</th><th>User</th><th>Project</th>{admin && <th>IP</th>}</tr></thead>
               <tbody>{data?.items.map(l => (
@@ -88,14 +95,9 @@ export default function Logs({ admin }) {
               ))}</tbody>
             </table>
           </div>
-          <div className="pager">
-            <span className="muted">{data.total.toLocaleString()} entries</span>
-            <button className="btn btn-sm" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Previous</button>
-            <span>Page {page} of {pages}</span>
-            <button className="btn btn-sm" disabled={page >= pages} onClick={() => setPage(p => p + 1)}>Next</button>
-          </div>
         </>
       )}
+      </Panel>
     </>
   )
 }

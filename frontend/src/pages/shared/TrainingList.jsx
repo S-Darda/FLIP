@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api, qs } from '../../api'
 import Icon from '../../components/Icon'
-import { Badge, Empty, ErrorBox, PageHeader, Progress, Spinner, Tabs, useApi } from '../../components/ui'
+import { Badge, Empty, ErrorBox, PageHeader, Panel, Progress, Spinner, Tabs, useApi } from '../../components/ui'
 import { dateTime, duration, pct } from '../../format'
 import { useRealtimeEvent } from '../../realtime'
 import { useToast } from '../../toast'
@@ -38,16 +38,16 @@ export default function TrainingList({ admin }) {
       {loading && !data ? <Spinner /> : data?.length === 0 ? (
         <Empty icon="nodes" title="No training runs">{!admin && 'Once an admin approves a project you can start training from its page.'}</Empty>
       ) : (
-        <div className="table-wrap card flush">
+        <Panel className="fill" flush>
           <table className="table">
             <thead><tr><th>Run</th><th>Project</th><th>Setup</th><th>Progress</th><th>Accuracy</th><th>Started</th><th>Duration</th><th /></tr></thead>
             <tbody>{data?.map(j => (
               <tr key={j.training_id}>
                 <td><Link to={`${base}/training/${j.training_id}`}><strong>#{j.training_id}</strong></Link></td>
                 <td>{j.project_name}{admin && <div className="muted small">{j.started_by_name}</div>}</td>
-                <td className="small">{j.algorithm} · {j.model_label}<div className="muted">{j.num_nodes} nodes · {j.rounds} rounds{j.dp_enabled ? ' · DP' : ''}</div></td>
+                <td className="small">{j.mode_label} · {j.algorithm} · {j.model_label}{j.trial_count > 1 && ` · trial ${j.trial_index}/${j.trial_count}`}{j.is_best && ' ★'}<div className="muted">{j.num_nodes} nodes · {j.rounds} rounds{j.dp_enabled ? ' · DP' : ''}</div></td>
                 <td className="w-progress"><Badge status={j.status} /><Progress value={j.current_round} max={j.rounds} live={j.status === 'In Progress'} /></td>
-                <td>{pct(j.accuracy)}</td>
+                <td>{j.task_type === 'regression' ? `RMSE ${j.rmse?.toFixed(3) ?? '—'}` : pct(j.accuracy)}</td>
                 <td className="nowrap">{dateTime(j.started_at || j.created_at)}</td>
                 <td className="nowrap">{duration(j.started_at, j.finished_at)}</td>
                 <td className="nowrap">
@@ -57,7 +57,7 @@ export default function TrainingList({ admin }) {
               </tr>
             ))}</tbody>
           </table>
-        </div>
+        </Panel>
       )}
     </>
   )

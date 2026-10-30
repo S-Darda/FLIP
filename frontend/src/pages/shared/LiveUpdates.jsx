@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import Icon from '../../components/Icon'
-import { Badge, Empty, PageHeader } from '../../components/ui'
+import { Badge, Empty, PageHeader, Panel } from '../../components/ui'
 import { pct } from '../../format'
 import { useRealtime } from '../../realtime'
 
@@ -10,7 +10,7 @@ function describe(e, base) {
       return {
         icon: 'nodes', tag: e.status,
         text: e.round_metrics
-          ? <>Run <Link to={`${base}/training/${e.training_id}`}>#{e.training_id}</Link> finished round {e.current_round}/{e.rounds}: accuracy {pct(e.accuracy)}, loss {e.loss?.toFixed(4)}</>
+          ? <>Run <Link to={`${base}/training/${e.training_id}`}>#{e.training_id}</Link> finished round {e.current_round}/{e.rounds}: {e.task_type === 'regression' ? `RMSE ${e.rmse?.toFixed(3)}` : `accuracy ${pct(e.accuracy)}`}, loss {e.loss?.toFixed(4)}</>
           : <>Run <Link to={`${base}/training/${e.training_id}`}>#{e.training_id}</Link> is now {e.status.toLowerCase()}{e.accuracy != null && ` (accuracy ${pct(e.accuracy)})`}</>,
       }
     case 'project':
@@ -20,6 +20,8 @@ function describe(e, base) {
       return { icon: 'model', tag: e.submission.status, text: <>Model “{e.submission.model_name}” is {e.submission.status.toLowerCase()}</> }
     case 'notification':
       return { icon: 'bell', tag: 'info', text: e.notification.message }
+    case 'comment':
+      return { icon: 'logs', tag: 'info', text: <>New comment on run <Link to={`${base}/training/${e.training_id}`}>#{e.training_id}</Link>: {e.comment.body}</> }
     case 'log':
       return { icon: 'logs', tag: e.log.level, text: <><span className="mono small">{e.log.action}</span> {e.log.log_message}</> }
     default:
@@ -38,12 +40,13 @@ export default function LiveUpdates({ admin }) {
                     <span className={`ws-pill ${connected ? 'on' : ''}`}><span className="dot" /> {connected ? 'Connected' : 'Reconnecting…'}</span>
                     {feed.length > 0 && <button className="btn btn-ghost btn-sm" onClick={clearFeed}>Clear</button>}
                   </>} />
+      <Panel className="fill" flush>
       {feed.length === 0 ? (
         <Empty icon="live" title="Listening for events">
-          Keep this page open. Start a training run or approve a project in another tab and events will stream in here.
+          Keep this page open. Start a training run or approve a study in another tab and events will stream in here.
         </Empty>
       ) : (
-        <ul className="feed card">
+        <ul className="feed">
           {feed.map((e, i) => {
             const d = describe(e, base)
             return (
@@ -57,6 +60,7 @@ export default function LiveUpdates({ admin }) {
           })}
         </ul>
       )}
+      </Panel>
     </>
   )
 }

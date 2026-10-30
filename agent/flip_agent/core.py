@@ -140,7 +140,8 @@ class Agent:
             try:
                 result = handle(self._dataset(p.get("dataset", "")), t["kind"], p)
                 self._signed("POST", f"/api/agent/tasks/{t['task_id']}/result", {"result": result})
-                what = (f"update ({sum(len(json.dumps(d)) for d in result['delta']) // 1024} KB of weights)"
+                size = len(json.dumps(result["delta"])) if t["kind"] == "train" else 0
+                what = (f"weight update ({size / 1024:.1f} KB)"
                         if t["kind"] == "train" else "aggregate statistics")
                 log.info("[%s] run %s %s round %s: sent %s, no rows", self.state.site_name, t["training_id"], t["kind"], t["round"], what)
             except TaskRejected as exc:
