@@ -5,7 +5,7 @@ No table holds training rows: sites register only a dataset's schema and row cou
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import BigInteger, Boolean, DateTime, Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
@@ -104,7 +104,7 @@ class Site(Base):
     token_hash: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
     token_expires: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     last_seen: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    last_request_ms: Mapped[int] = mapped_column(Integer, default=0)
+    last_request_ms: Mapped[int] = mapped_column(BigInteger, default=0)
     agent_version: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     enrolled_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

@@ -1,6 +1,0 @@
-Metadata-Version: 2.4
-Name: flipml
-Version: 0.2.0
-Summary: Shared training and aggregate-evaluation code for the FLIP coordinator and site agents
-Requires-Python: >=3.11
-Requires-Dist: numpy>=2.0

@@ -21,16 +21,28 @@ UNIT = "client"
 ACCOUNTANT = "RDP, Gaussian mechanism, no subsampling amplification"
 
 
+def epsilon_for_releases(releases: list[tuple[float, int]], delta: float = DEFAULT_DELTA) -> float | None:
+    """(epsilon, delta) after composing several runs, each given as (noise multiplier, rounds).
+    RDP composes additively per order, so trials of one study share a single budget.
+    Returns None if any release had no noise, since then no finite guarantee holds."""
+    releases = [(z, r) for z, r in releases if r > 0]
+    if not releases:
+        return 0.0
+    if any(z <= 0 for z, _ in releases):
+        return None
+    best = math.inf
+    for a in ORDERS:
+        rdp = sum(r * a / (2 * z ** 2) for z, r in releases)
+        eps = rdp + math.log((a - 1) / a) - (math.log(delta) + math.log(a)) / (a - 1)
+        best = min(best, eps)
+    return max(0.0, best)
+
+
 def gaussian_epsilon(noise_multiplier: float, rounds: int, delta: float = DEFAULT_DELTA) -> float | None:
     """(epsilon, delta)-DP spent after `rounds` releases. None if there is no noise (no guarantee)."""
     if noise_multiplier <= 0 or rounds <= 0:
         return None
-    best = math.inf
-    for a in ORDERS:
-        rdp = rounds * a / (2 * noise_multiplier ** 2)
-        eps = rdp + math.log((a - 1) / a) - (math.log(delta) + math.log(a)) / (a - 1)
-        best = min(best, eps)
-    return max(0.0, best)
+    return epsilon_for_releases([(noise_multiplier, rounds)], delta)
 
 
 def summary(dp_enabled: bool, noise_multiplier: float, clip_norm: float, rounds_run: int,

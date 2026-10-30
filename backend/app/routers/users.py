@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from ..audit import record
 from ..database import get_db
 from ..deps import admin_only
-from ..models import ROLE_ADMIN, Project, User
+from ..models import ROLE_ADMIN, Organisation, Project, User
 from ..schemas import UserCreate, UserUpdate, user_out
 from ..security import hash_password
 
@@ -30,8 +30,8 @@ def list_users(q: str | None = None, role: str | None = None,
     query = db.query(User)
     if q:
         like = f"%{q.lower()}%"
-        query = query.filter(or_(User.username.ilike(like), User.email.ilike(like),
-                                 User.organisation.ilike(like)))
+        query = query.outerjoin(Organisation).filter(or_(User.username.ilike(like), User.email.ilike(like),
+                                                         Organisation.name.ilike(like)))
     if role:
         query = query.filter(User.role == role)
     if status_ == "active":
@@ -49,8 +49,10 @@ def create_user(body: UserCreate, admin: User = Depends(admin_only), db: Session
     email = body.email.lower()
     if db.query(User).filter(User.email == email).first():
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Email already registered")
+    if body.organisation_id is not None and not db.get(Organisation, body.organisation_id):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown organisation")
     user = User(username=body.username.strip(), email=email, password_hash=hash_password(body.password),
-                role=body.role, organisation=body.organisation)
+                role=body.role, organisation_id=body.organisation_id)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -78,8 +80,10 @@ def update_user(user_id: int, body: UserUpdate, admin: User = Depends(admin_only
     if body.username is not None and body.username != user.username:
         user.username = body.username.strip()
         changes.append("name")
-    if body.organisation is not None and body.organisation != user.organisation:
-        user.organisation = body.organisation
+    if "organisation_id" in body.model_fields_set and body.organisation_id != user.organisation_id:
+        if body.organisation_id is not None and not db.get(Organisation, body.organisation_id):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown organisation")
+        user.organisation_id = body.organisation_id
         changes.append("organisation")
     if body.role and body.role != user.role:
         changes.append(f"role {user.role} → {body.role}")

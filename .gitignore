@@ -6,3 +6,5 @@ __pycache__/
 backend/flip.db*
 backend/storage/
 .pytest_cache/
+flipml/*.egg-info/
+agent/*.egg-info/

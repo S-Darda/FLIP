@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from ..audit import serialize_log
 from ..database import get_db
 from ..deps import admin_only, developer_only, get_current_user
-from ..models import (JOB_ACTIVE, JOB_COMPLETED, PROJECT_PENDING, PROJECT_STATUSES, ROLES, Log,
+from ..models import (JOB_ACTIVE, Organisation, Site, JOB_COMPLETED, PROJECT_PENDING, PROJECT_STATUSES, ROLES, Log,
                       ModelAwaiting, ModelTraining, Notification, Project, User, utcnow)
 from ..realtime import manager
 from ..schemas import iso, project_out, training_out, user_out
@@ -33,8 +33,8 @@ def public_stats(db: Session = Depends(get_db)):
     done = db.query(ModelTraining).filter(ModelTraining.status == JOB_COMPLETED)
     return {
         "projects": db.query(Project).filter(Project.status == "Approved").count(),
-        "organisations": db.query(func.count(func.distinct(User.organisation)))
-                           .filter(User.organisation.isnot(None)).scalar() or 0,
+        "organisations": db.query(Organisation).count(),
+        "sites": db.query(Site).filter(Site.status == "Active").count(),
         "training_runs": done.count(),
         "federated_rounds": db.query(func.coalesce(func.sum(ModelTraining.current_round), 0))
                               .filter(ModelTraining.status == JOB_COMPLETED).scalar(),
