@@ -50,8 +50,8 @@ def summary(dp_enabled: bool, noise_multiplier: float, clip_norm: float, rounds_
     """What the report says about privacy, including when no formal guarantee applies."""
     if not dp_enabled or noise_multiplier <= 0:
         return {"guarantee": False, "unit": None, "epsilon": None, "delta": None,
-                "note": "No differential privacy. Individual updates were clipped only if DP was on; "
-                        "the trained model and metrics carry no formal privacy guarantee."}
+                "note": "No differential privacy was applied, so the trained model and its metrics "
+                        "carry no formal privacy guarantee."}
     eps = gaussian_epsilon(noise_multiplier, rounds_run, delta)
     return {"guarantee": True, "unit": UNIT, "epsilon": eps, "delta": delta, "accountant": ACCOUNTANT,
             "noise_multiplier": noise_multiplier, "clip_norm": clip_norm, "rounds": rounds_run,

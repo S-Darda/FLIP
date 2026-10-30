@@ -10,7 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .database import Base
 
-SCHEMA_VERSION = "phase1-v1"
+SCHEMA_VERSION = "phase1-v2"
 
 
 def utcnow() -> datetime:
@@ -217,6 +217,7 @@ class ModelTraining(Base):
     report: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     weights: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # author's discussion, printed in the PDF
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
@@ -225,6 +226,8 @@ class ModelTraining(Base):
     starter: Mapped[User] = relationship()
     round_metrics: Mapped[list["TrainingRound"]] = relationship(
         back_populates="training", cascade="all, delete-orphan", order_by="TrainingRound.round")
+    comments: Mapped[list["ReportComment"]] = relationship(
+        back_populates="training", cascade="all, delete-orphan", order_by="ReportComment.created_at")
     artefact: Mapped[Optional["ModelArtefact"]] = relationship(back_populates="training", uselist=False, cascade="all, delete-orphan")
 
 
@@ -258,6 +261,21 @@ class AgentTask(Base):
     error: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
+
+
+class ReportComment(Base):
+    """Feedback on a training report from the study owner or an admin. Printed in the PDF."""
+    __tablename__ = "report_comments"
+
+    comment_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    training_id: Mapped[int] = mapped_column(ForeignKey("model_training.training_id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.user_id", ondelete="SET NULL"), nullable=True)
+    kind: Mapped[str] = mapped_column(String(20), default="comment")  # comment | feedback
+    body: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    training: Mapped["ModelTraining"] = relationship(back_populates="comments")
+    author: Mapped[Optional[User]] = relationship()
 
 
 class ModelArtefact(Base):

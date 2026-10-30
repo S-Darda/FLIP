@@ -136,3 +136,17 @@ def test_websocket_requires_auth_and_streams(client, dev1):
         assert ws.receive_json()["type"] == "hello"
         ws.send_text("ping")
         assert ws.receive_json()["type"] == "pong"
+
+
+def test_pdf_report_with_notes_and_comments(client, dev1, dev2, admin):
+    pid = _create(client, dev1, "PDF Study").json()["project_id"]
+    client.post(f"/api/projects/{pid}/review", headers=admin, json={"decision": "Approved", "feedback": "Fine for a pilot"})
+    tid = client.post(f"/api/projects/{pid}/training", headers=dev1, json={"rounds": 3}).json()["training_id"]
+    assert _wait(client, dev1, tid)["status"] == "Completed"
+    assert client.put(f"/api/training/{tid}/notes", headers=dev1, json={"notes": "Converged quickly."}).status_code == 200
+    assert client.post(f"/api/training/{tid}/comments", headers=admin, json={"body": "Check calibration", "kind": "feedback"}).json()["kind"] == "feedback"
+    assert client.post(f"/api/training/{tid}/comments", headers=dev2, json={"body": "nosy"}).status_code == 404
+    r = client.get(f"/api/training/{tid}/report.pdf", headers=dev1)
+    assert r.status_code == 200 and r.headers["content-type"] == "application/pdf" and r.content[:5] == b"%PDF-"
+    assert len(r.content) > 5000
+    assert client.get(f"/api/training/{tid}/report.pdf", headers=dev2).status_code == 404

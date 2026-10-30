@@ -172,6 +172,15 @@ class TrainingIn(BaseModel):
     trials: int = Field(default=1, ge=1, le=20)
 
 
+class CommentIn(BaseModel):
+    body: str = Field(min_length=1, max_length=4000)
+    kind: Literal["comment", "feedback"] = "comment"
+
+
+class NotesIn(BaseModel):
+    notes: str = Field(default="", max_length=20000)
+
+
 class SubmissionIn(BaseModel):
     training_id: int
     model_name: str = Field(min_length=2, max_length=255)
@@ -266,7 +275,15 @@ def training_out(t: ModelTraining, rounds: bool = False) -> dict:
     if rounds:
         data["round_metrics"] = [round_out(r) for r in t.round_metrics]
         data["report"] = jl(t.report)
+        data["notes"] = t.notes
+        data["comments"] = [comment_out(c) for c in t.comments]
     return data
+
+
+def comment_out(c) -> dict:
+    return {"comment_id": c.comment_id, "kind": c.kind, "body": c.body, "user_id": c.user_id,
+            "author": c.author.username if c.author else "Deleted user", "role": c.author.role if c.author else None,
+            "created_at": iso(c.created_at)}
 
 
 def round_out(r) -> dict:

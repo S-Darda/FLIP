@@ -3,7 +3,7 @@ import uuid
 
 import numpy as np
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
 from .. import training_runner
@@ -14,7 +14,10 @@ from ..models import (JOB_ACTIVE, JOB_CANCELLED, JOB_COMPLETED, JOB_QUEUED, JOB_
                       ROLE_ADMIN, ModelAwaiting, ModelTraining, Project, User, utcnow)
 from ..policy import check_run
 from ..realtime import manager
-from ..schemas import SubmissionIn, SubmissionReviewIn, TrainingIn, submission_out, training_out
+from ..models import ReportComment
+from ..report_pdf import build_pdf
+from ..schemas import (CommentIn, NotesIn, SubmissionIn, SubmissionReviewIn, TrainingIn, comment_out, project_out,
+                       submission_out, training_out)
 from ..security import artefact_key_id, artefact_public_key_hex
 
 router = APIRouter(prefix="/api", tags=["training"])
@@ -93,12 +96,7 @@ def list_training(project_id: int | None = None, status_: str | None = Query(def
 
 @router.get("/training/{training_id}")
 def get_training(training_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    job = _visible_job(db, training_id, user)
-    out = training_out(job, rounds=True)
-    if job.group_id:
-        siblings = db.query(ModelTraining).filter(ModelTraining.group_id == job.group_id).order_by(ModelTraining.trial_index)
-        out["trials"] = [training_out(t) for t in siblings]
-    return out
+    return _run_detail(db, _visible_job(db, training_id, user))
 
 
 @router.post("/training/{training_id}/cancel")
@@ -133,6 +131,67 @@ def download_results(training_id: int, user: User = Depends(get_current_user), d
            user=user, project_id=job.project_id, owner_id=job.project.created_by)
     name = f"flip-model-{job.project_id}-v{job.artefact.version}.json"
     return JSONResponse(payload, headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+def _run_detail(db: Session, job: ModelTraining) -> dict:
+    out = training_out(job, rounds=True)
+    if job.group_id:
+        siblings = db.query(ModelTraining).filter(ModelTraining.group_id == job.group_id).order_by(ModelTraining.trial_index)
+        out["trials"] = [training_out(t) for t in siblings]
+    return out
+
+
+@router.get("/training/{training_id}/report.pdf")
+def report_pdf(training_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    job = _visible_job(db, training_id, user)
+    if job.status != JOB_COMPLETED:
+        raise HTTPException(status.HTTP_409_CONFLICT, "The PDF report is available once training completes")
+    pdf = build_pdf(_run_detail(db, job), project_out(job.project, detail=True), user.username)
+    record(db, "report.pdf", f"{user.username} exported the PDF report of training #{training_id}",
+           user=user, project_id=job.project_id, owner_id=job.project.created_by)
+    name = f"flip-report-run-{training_id}.pdf"
+    return Response(pdf, media_type="application/pdf", headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+@router.post("/training/{training_id}/comments", status_code=201)
+def add_comment(training_id: int, body: CommentIn, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    job = _visible_job(db, training_id, user)
+    kind = "feedback" if user.role == ROLE_ADMIN and body.kind == "feedback" else "comment"
+    c = ReportComment(training_id=training_id, user_id=user.user_id, kind=kind, body=body.body.strip())
+    db.add(c)
+    db.commit()
+    db.refresh(c)
+    owner = job.project.created_by
+    record(db, "report.comment", f"{user.username} added {kind} on training #{training_id}", user=user,
+           project_id=job.project_id, owner_id=owner)
+    if user.user_id != owner:
+        notify(db, owner, f"{user.username} left {kind} on run #{training_id}", f"/app/training/{training_id}")
+    else:
+        notify_admins(db, f"{user.username} commented on run #{training_id}", f"/admin/training/{training_id}")
+    out = comment_out(c)
+    manager.publish({"type": "comment", "training_id": training_id, "comment": out}, users=[owner], admins=True)
+    return out
+
+
+@router.delete("/training/{training_id}/comments/{comment_id}", status_code=204)
+def delete_comment(training_id: int, comment_id: int, user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    _visible_job(db, training_id, user)
+    c = db.get(ReportComment, comment_id)
+    if not c or c.training_id != training_id or (c.user_id != user.user_id and user.role != ROLE_ADMIN):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Comment not found")
+    db.delete(c)
+    db.commit()
+
+
+@router.put("/training/{training_id}/notes")
+def set_notes(training_id: int, body: NotesIn, user: User = Depends(developer_only), db: Session = Depends(get_db)):
+    """The study owner's discussion text, printed in section 6 of the PDF."""
+    job = _visible_job(db, training_id, user)
+    job.notes = body.notes.strip() or None
+    db.commit()
+    record(db, "report.notes", f"{user.username} updated discussion notes for training #{training_id}",
+           user=user, project_id=job.project_id, owner_id=user.user_id)
+    return {"notes": job.notes}
 
 
 @router.get("/artefacts/public-key")
