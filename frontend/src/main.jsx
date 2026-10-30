@@ -7,6 +7,7 @@ import { RealtimeProvider } from './realtime'
 import { ThemeProvider } from './theme'
 import { ToastProvider } from './toast'
 import './styles.css'
+import './landing.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
